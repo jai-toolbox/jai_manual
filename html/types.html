@@ -1,0 +1,202 @@
+
+<p>
+    In Jai, you can write something like:
+</p>
+
+<pre>
+a: Type = int;
+b: Type = Video_File;
+</pre>
+
+<p>
+    So what is the value that <code>a</code> and <code>b</code> actually hold? What <em>is</em>
+    <code>int</code> or <code>Video_File</code> when used as a value?
+</p>
+
+
+<p>
+    <code>Type</code> value is a <strong>pointer to a <code>Type_Info</code> struct</strong>.
+</p>
+
+<p>
+    When the compiler compiles your program, it creates exactly <strong>one</strong>
+    <code>Type_Info</code> struct for every distinct type in the program. These all live in the
+    program's data segment. There is one for <code>int</code>, one for <code>float64</code>, one
+    for <code>Video_File</code>, and so on. There are never duplicates.
+</p>
+
+<p>
+    Every time you refer to a type such as <code>int</code>, or <code>Video_File</code>, or <code>type_of(x)</code> you get back the same pointer to that type's single <code>Type_Info</code>.
+</p>
+
+<pre>
+Program Memory (data segment):
+
+0xA000:  Type_Info_Integer  { runtime_size = 8, signed = true }     - this is "int"
+0xA040:  Type_Info_Float    { runtime_size = 8 }                    - this is "float64"
+0xA070:  Type_Info_Struct   { name = "Video_File", members = ... }  - this is "Video_File"
+0xA100:  Type_Info_Struct   { name = "Audio_File", members = ... }  - this is "Audio_File"
+
+So when you write:
+
+a: Type = int;          // a holds 0xA000
+b: Type = int;          // b holds 0xA000
+c: Type = Video_File;   // c holds 0xA070
+
+a == b is 0xA000 == 0xA000 which is true    (same type)
+a == c is 0xA000 == 0xA070 which is false   (different types)
+</pre>
+
+<p>
+    That's it. Every reference to <code>int</code> anywhere in your program resolves to the same pointer. Comparing two types is just comparing two pointers &mdash; one machine instruction.
+</p>
+
+<h2>Why This Matters for Serialization</h2>
+
+<p>
+    Because a <code>Type</code> is a pointer into the current process's memory, it is <strong>meaningless outside that process</strong>.
+</p>
+
+<ul>
+    <li>You cannot send it over the network. The other machine has its own type info table at different addresses.</li>
+    <li>You cannot save it to disk. When the program restarts, the type info table will be at a different address (due to ASLR, recompilation, etc.).</li>
+    <li>You cannot share it between two different programs. They have completely separate type info tables.</li>
+</ul>
+
+<p>
+    If you have a struct with a <code>Type</code> field and you write its bytes to a file or send them over a socket, the <code>Type</code> field becomes a dangling pointer on the other side.
+</p>
+
+
+<p>
+    So if you need to serialize type identity, you must convert it to something stable yourself: an enum value, a string name, a hash, or some other identifier that both sides agree on.  The <code>Type</code> value itself is purely a fast, in-process convenience.
+</p>
+
+
+<h2>A Solution to Serialization</h2>
+
+<p>
+    In order to make serialization work we can do something like this
+</p>
+
+<pre>
+    <code>
+
+My_Type_Info :: struct {
+    type:        Type;
+    struct_name: string;
+    type_id:     u64;
+};
+
+types: [..] My_Type_Info;
+
+add_type :: (types: *[..] My_Type_Info, type: Type) {
+    info := cast(*Type_Info) type;
+    assert(info.type == .STRUCT, "add_type only supports structs");
+
+    ti := cast(*Type_Info_Struct) type;
+    name := ti.name;
+    id := get_hash(name);
+
+    for types.* {
+        assert(it.type_id != id || it.type == type,
+               "Hash collision between '%' and '%'", it.struct_name, name);
+        if it.type == type return;  // already registered
+    }
+
+    array_add(types, .{type, name, id});
+}
+
+get_type :: (type_id: u64) -> Type, bool {
+    for types {
+        if it.type_id == type_id
+            return it.type, true;
+    }
+    return Type.{}, false;
+}
+
+get_type_id :: (type: Type) -> u64, bool {
+    for types {
+        if it.type == type
+            return it.type_id, true;
+    }
+    return 0, false;
+}
+
+    </code>
+</pre>
+
+<h3>How to Use This</h3>
+
+<p>
+    First, at startup, register every struct type that you intend to serialize. Both the
+    sending side and the receiving side must register the same types:
+</p>
+
+<pre>
+    <code>
+init_types :: () {
+    add_type(*types, Video_File);
+    add_type(*types, Audio_File);
+    add_type(*types, Executable_File);
+}
+    </code>
+</pre>
+
+<p>
+    When you need to serialize a document (for example, to send it over the network or write it to a file), convert its <code>Type</code> field into a <code>u64</code> ID using <code>get_type_id</code>. Write that ID to your output instead of the raw <code>Type</code> pointer:
+</p>
+
+<pre>
+    <code>
+serialize_document :: (doc: *Document) -> [] u8 {
+    id, ok := get_type_id(doc.type);
+    assert(ok, "Tried to serialize an unregistered type");
+
+    // Write id (a u64) to your byte stream instead of doc.type.
+    // Then write the rest of the struct's fields as normal.
+    // ...
+}
+    </code>
+</pre>
+
+<p>
+    On the receiving side, read the <code>u64</code> ID back and convert it to a <code>Type</code>
+    using <code>get_type</code>. You now have a valid in-process <code>Type</code> pointer that
+    you can assign to the struct's <code>type</code> field:
+</p>
+
+<pre>
+    <code>
+deserialize_document :: (bytes: [] u8) -> *Document {
+    // read the u64 type id from the byte stream.
+    id := read_u64(bytes);
+
+    type, ok := get_type(id);
+    assert(ok, "Received an unknown type ID: %", id);
+
+    // allocate the correct struct and set its type field.
+    doc := cast(*Document) alloc(size_of_type(type));
+    doc.type = type;
+
+    // Read the rest of the fields...
+    // ...
+
+    return doc;
+}
+    </code>
+</pre>
+
+<p>
+    The important rule is: <strong>both sides must call <code>add_type</code> for the same set of
+    types.</strong> Because the ID is derived from a hash of the struct name, as long as both sides
+    have a struct with the same name, the IDs will match regardless of where in memory each
+    program's type info table lives.
+</p>
+
+<p>
+    If you add a new type later, just add another <code>add_type</code> call on both sides. If you
+    rename a struct, the hash changes, and the old ID becomes invalid &mdash; which is usually what
+    you want, since a renamed struct likely has different semantics. If you need to survive renames,
+    consider hashing the struct's members and layout instead of (or in addition to) the name.
+</p>
