@@ -48,7 +48,7 @@ a == c is 0xA000 == 0xA070 which is false   (different types)
 </pre>
 
 <p>
-    That's it. Every reference to <code>int</code> anywhere in your program resolves to the same pointer. Comparing two types is just comparing two pointers &mdash; one machine instruction.
+    That's it. Every reference to <code>int</code> anywhere in your program resolves to the same pointer. Comparing two types is just comparing two pointers which equates to one machine instruction.
 </p>
 
 <h2>Why This Matters for Serialization</h2>
@@ -196,7 +196,7 @@ deserialize_document :: (bytes: [] u8) -> *Document {
 
 <p>
     If you add a new type later, just add another <code>add_type</code> call on both sides. If you
-    rename a struct, the hash changes, and the old ID becomes invalid &mdash; which is usually what
+    rename a struct, the hash changes, and the old ID becomes invalid, which is usually what
     you want, since a renamed struct likely has different semantics. If you need to survive renames,
     consider hashing the struct's members and layout instead of (or in addition to) the name.
 </p>
