@@ -77,13 +77,27 @@ article {
 }
 
 /* Code blocks */
-pre,
 code {
     background-color: var(--code-bg-color);
     color: var(--code-text-color);
     border-radius: 4px;
     padding: 0.2em 0.4em;
 }
+
+pre {
+    background-color: var(--code-bg-color);
+    color: var(--code-text-color);
+    border-radius: 4px;
+    padding: 0.8em 1em;
+    overflow-x: auto;
+    box-sizing: border-box;
+}
+
+pre code {
+    padding: 0;
+    background-color: transparent;
+}
+
 
 /* Tables */
 table {
