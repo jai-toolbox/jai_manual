@@ -1,0 +1,30 @@
+
+<pre>
+    <code>
+Time_Zone :: enum u32 {
+    UTC   :: 0;
+    LOCAL :: 1;  // Whatever the system local time zone is.
+
+    // Maybe we will extend this with other fixed zones.
+}
+    </code>
+</pre>
+<pre>
+    <code>
+Calendar_Time :: struct {
+    year:        s32;
+    month\      _starting_at_0: s8;  // 0-11. Use as an index to a month name array, or add 1 to get the normal human-readable number.
+    day_of_month_starting_at_0: s8;  // 0-30. Add 1 to get the normal human-readable number.
+    day_of_week\_starting_at_0: s8;  // Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday.
+    hour:        s8;
+    minute:      s8;
+    second:      s8;
+    millisecond: s16;
+
+    time_zone: Time_Zone;
+}
+    </code>
+</pre>
+
+<code>to_calendar :: (at: Apollo_Time, time_zone := Time_Zone.UTC) -> Calendar_Time</code>
+<code>current_time_consensus :: () -> Apollo_Time</code>

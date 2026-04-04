@@ -1,0 +1,66 @@
+<h2>A minimal working window</h2>
+<pre>
+    <code>
+#import "Window_Creation";
+
+Simp  :: #import "Simp";
+Input :: #import "Input";
+
+window_width  : s32 = 500;
+window_height : s32 = 500;
+
+my_window: Window_Type;
+
+main :: () {
+    my_window = create_window(window_width, window_height, "tbx_clock");
+    Simp.set_render_target(my_window);
+    quit := false;
+    while !quit {
+        Input.update_window_events();
+        for Input.events_this_frame {
+            if it.type == .QUIT then quit = true;
+
+            if it.type == {
+              case .KEYBOARD;
+                if it.key_pressed && it.key_code == .ESCAPE {
+                    quit = true;
+                }
+            }
+        }
+        Simp.clear_render_target(.15, .08, .08, 1);
+        Simp.swap_buffers(my_window);
+    }
+}
+    </code>
+</pre>
+
+<h2>window resize callback</h2>
+<p>
+    Put this inside of your while loop.
+</p>
+<pre>
+    <code>
+for Input.get_window_resizes() {
+    Simp.update_window(it.window);  
+    if it.window == my_window {
+        should_reinit := (it.width != window_width) || (it.height != window_height);
+
+        window_width  = it.width;
+        window_height = it.height;
+    }
+}
+    </code>
+</pre>
+
+<h2>integrating external rendering with simp</h2>
+<p>
+    Simp is just some opengl code wrapped up into a nice package so you can focus on doing stuff rather than wrangling opengl (it operates in immediate mode). But what if you have your own rendering logic, but still want to rely on simp to do your text rendering or to render ui's that you created with GetRect.
+</p>
+<p>
+    The main thing to understand here is that simp will not know about your external rendering, and problematic things may occur. One example is that there are functions like <code>set_shader_for_blah</code>, in these functions they will check to see if that shader is already active, if it is it just dumps out early and doesn't set the shader. This is fine except for the fact that you may have changed the shader to do your own rendering, but simp still thinks that their own shader is active, thus if you are going to do your own rendering alongside simp, it's recommended that you do 
+</p>
+
+<p>
+    More specifically there is a struct called <code>Immediate_State</code> which holds a pointer what it thinks is the current shader (but this is only in the realm of simp) and doesn't handle any external things that you do to change what opengl's global state thinks is your current shader. When using simp, it will add a variable of the name simp to the context which holds a pointer the immediate state and thus at the start of the rendering if we do a <code>context.simp.current_shader = null;</code>, then this corrects simps state so taht it will re-bind all all shaders as necessary.
+</p>
+

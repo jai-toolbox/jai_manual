@@ -1,0 +1,9 @@
+[submodule "scripts/fast-html"]
+	path = scripts/fast-html
+	url = git@github.com:simple-web-tools/fast-html.git
+[submodule "scripts/fsweb"]
+	path = scripts/fsweb
+	url = git@github.com:simple-web-tools/fsweb.git
+[submodule "html/js/recursive_links"]
+	path = html/js/recursive_links
+	url = git@github.com:simple-web-tools/recursive_links.git

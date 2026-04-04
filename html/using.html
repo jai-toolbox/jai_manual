@@ -1,0 +1,15 @@
+
+<p>
+    Using is a way to open a namespace with something. TODO definition of a namespace.
+</p>
+
+
+<h2>dealing with name collisions</h2>
+
+<p>
+    If you just want to not include a certain field name you can do <code>using,except(length) position: Your_Type_With_Length</code>. Alternatively we can import only what we request by doing <code>using,only(blah) foo : Type</code>
+</p>
+
+<p>
+    Suppose that there is a field that represents the same thing. So in your setup you have a field called position, and then someone else made a type that holds this information as translation, you want to do "using" but then you have two fields representing the same thing which wshould be synchronized. To do this we can do <code>using,map(proc)</code> here proc is a function that takes in the names, and then TODO idk where I was going with this but my goal was to somehow do a compile time #place translation : position or something like that so they refer to the same thing.
+</p>

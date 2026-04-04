@@ -1,0 +1,1341 @@
+<div class="definition" id="definition-notation">
+    <h2 class="line-text">Notation</h2>
+    <table>
+        <tr>
+            <th>Notation</th>
+            <th>Meaning</th>
+        </tr>
+        <tr>
+            <td><code>element<sub>opt</sub></code></td>
+            <td>Element is optional</td>
+        </tr>
+        <tr>
+            <td><code>element-list</code></td>
+            <td>One or more elements</td>
+        </tr>
+        <tr>
+            <td><code>element...</code></td>
+            <td>Zero or more elements (repetition)</td>
+        </tr>
+        <tr>
+            <td><code>identifier</code></td>
+            <td>A valid Jai identifier name</td>
+        </tr>
+        <tr>
+            <td><code>expression</code></td>
+            <td>Any valid Jai <a class="rlink" href="grammar.html#definition-expression">expression</a></td>
+        </tr>
+        <tr>
+            <td><code>statement</code></td>
+            <td>Any valid Jai <a class="rlink" href="grammar.html#definition-statement">statement</a></td>
+        </tr>
+        <tr>
+            <td>Indented lines</td>
+            <td>Alternative productions for the rule above</td>
+        </tr>
+    </table>
+</div>
+
+<h2>Table of Contents</h2>
+<ul>
+    <li><strong>Statements</strong>
+        <ul>
+            <li><a class="rlink" href="grammar.html#definition-statement">Statement</a></li>
+            <li><a class="rlink" href="grammar.html#definition-for-loop">For Loop</a></li>
+            <li><a class="rlink" href="grammar.html#definition-while-loop">While Loop</a></li>
+            <li><a class="rlink" href="grammar.html#definition-named-loop">Named Loop</a></li>
+            <li><a class="rlink" href="grammar.html#definition-jump-statements">Jump Statements</a></li>
+            <li><a class="rlink" href="grammar.html#definition-if-statement">If Statement</a></li>
+            <li><a class="rlink" href="grammar.html#definition-if-case-statement">If Case Statement</a></li>
+            <li><a class="rlink" href="grammar.html#definition-defer-statement">Defer Statement</a></li>
+            <li><a class="rlink" href="grammar.html#definition-using-statement">Using Statement</a></li>
+            <li><a class="rlink" href="grammar.html#definition-push-context">Push Context</a></li>
+        </ul>
+    </li>
+    <li><strong>Declarations</strong>
+        <ul>
+            <li><a class="rlink" href="grammar.html#definition-variable-declaration">Variable Declaration</a></li>
+            <li><a class="rlink" href="grammar.html#definition-function-declaration">Function Declaration</a></li>
+            <li><a class="rlink" href="grammar.html#definition-struct-declaration">Struct Declaration</a></li>
+            <li><a class="rlink" href="grammar.html#definition-enum-declaration">Enum Declaration</a></li>
+            <li><a class="rlink" href="grammar.html#definition-enum-flags-declaration">Enum Flags Declaration</a></li>
+            <li><a class="rlink" href="grammar.html#definition-union-declaration">Union Declaration</a></li>
+        </ul>
+    </li>
+    <li><strong>Expressions</strong>
+        <ul>
+            <li><a class="rlink" href="grammar.html#definition-expression">Expression</a></li>
+            <li><a class="rlink" href="grammar.html#definition-primary-expression">Primary Expression</a></li>
+            <li><a class="rlink" href="grammar.html#definition-postfix-expression">Postfix Expression</a></li>
+            <li><a class="rlink" href="grammar.html#definition-unary-expression">Unary Expression</a></li>
+            <li><a class="rlink" href="grammar.html#definition-cast-expression">Cast Expression</a></li>
+            <li><a class="rlink" href="grammar.html#definition-binary-expression">Binary Expression</a></li>
+            <li><a class="rlink" href="grammar.html#definition-assignment-expression">Assignment Expression</a></li>
+            <li><a class="rlink" href="grammar.html#definition-lambda-expression">Lambda Expression</a></li>
+            <li><a class="rlink" href="grammar.html#definition-struct-literal">Struct Literal</a></li>
+            <li><a class="rlink" href="grammar.html#definition-array-literal">Array Literal</a></li>
+        </ul>
+    </li>
+    <li><strong>Types</strong>
+        <ul>
+            <li><a class="rlink" href="grammar.html#definition-type-specifier">Type Specifier</a></li>
+            <li><a class="rlink" href="grammar.html#definition-basic-type">Basic Type</a></li>
+            <li><a class="rlink" href="grammar.html#definition-pointer-type">Pointer Type</a></li>
+            <li><a class="rlink" href="grammar.html#definition-array-type">Array Type</a></li>
+            <li><a class="rlink" href="grammar.html#definition-procedure-type">Procedure Type</a></li>
+        </ul>
+    </li>
+    <li><strong>Compile-Time Directives</strong>
+        <ul>
+            <li><a class="rlink" href="grammar.html#definition-run-directive">#run</a></li>
+            <li><a class="rlink" href="grammar.html#definition-code-directive">#code</a></li>
+            <li><a class="rlink" href="grammar.html#definition-insert-directive">#insert</a></li>
+            <li><a class="rlink" href="grammar.html#definition-if-directive">#if</a></li>
+            <li><a class="rlink" href="grammar.html#definition-import-directive">#import</a></li>
+            <li><a class="rlink" href="grammar.html#definition-load-directive">#load</a></li>
+            <li><a class="rlink" href="grammar.html#definition-type-directive">#type</a></li>
+            <li><a class="rlink" href="grammar.html#definition-char-directive">#char</a></li>
+            <li><a class="rlink" href="grammar.html#definition-string-directive">#string</a></li>
+            <li><a class="rlink" href="grammar.html#definition-scope-directives">Scope Directives</a></li>
+            <li><a class="rlink" href="grammar.html#definition-assert-directive">#assert</a></li>
+            <li><a class="rlink" href="grammar.html#definition-foreign-directives">Foreign Directives</a></li>
+            <li><a class="rlink" href="grammar.html#definition-bake-directive">#bake</a></li>
+            <li><a class="rlink" href="grammar.html#definition-modify-directive">#modify</a></li>
+        </ul>
+    </li>
+    <li><strong>Modifiers and Annotations</strong>
+        <ul>
+            <li><a class="rlink" href="grammar.html#definition-function-modifiers">Function Modifiers</a></li>
+            <li><a class="rlink" href="grammar.html#definition-struct-modifiers">Struct Modifiers</a></li>
+            <li><a class="rlink" href="grammar.html#definition-parameter-modifiers">Parameter Modifiers</a></li>
+            <li><a class="rlink" href="grammar.html#definition-notes">Notes</a></li>
+        </ul>
+    </li>
+</ul>
+
+<hr>
+
+<h2>Statements</h2>
+
+<div class="definition" id="definition-statement">
+    <h2 class="line-text">Statement</h2>
+    <pre>statement:
+    <a class="rlink" href="grammar.html#definition-variable-declaration">variable-declaration</a>
+    <a class="rlink" href="grammar.html#definition-expression">expression</a> ;
+    <a class="rlink" href="grammar.html#definition-for-loop">for-statement</a>
+    <a class="rlink" href="grammar.html#definition-while-loop">while-statement</a>
+    <a class="rlink" href="grammar.html#definition-if-statement">if-statement</a>
+    <a class="rlink" href="grammar.html#definition-if-case-statement">if-case-statement</a>
+    <a class="rlink" href="grammar.html#definition-jump-statements">jump-statement</a>
+    <a class="rlink" href="grammar.html#definition-defer-statement">defer-statement</a>
+    <a class="rlink" href="grammar.html#definition-using-statement">using-statement</a>
+    <a class="rlink" href="grammar.html#definition-push-context">push-context-statement</a>
+    <a class="rlink" href="grammar.html#definition-insert-directive">#insert-directive</a>
+    <a class="rlink" href="grammar.html#definition-if-directive">#if-directive</a>
+    { statement-list<sub>opt</sub> }
+
+statement-list:
+    statement
+    statement-list statement</pre>
+</div>
+
+<div class="definition" id="definition-for-loop">
+    <h2 class="line-text">For Loop</h2>
+    <p>
+        The for loop iterates over <a class="rlink" href="grammar.html#definition-iterable">iterables</a> including ranges, arrays, and custom types with iterator support. See also: <a class="rlink" href="grammar.html#definition-named-loop">named loops</a>, <a class="rlink" href="grammar.html#definition-jump-statements">jump statements</a>.
+    </p>
+    <pre>for-statement:
+    for <a class="rlink" href="grammar.html#definition-for-modifiers">for-modifiers</a><sub>opt</sub> <a class="rlink" href="grammar.html#definition-for-iterator">for-iterator</a><sub>opt</sub> <a class="rlink" href="grammar.html#definition-iterable">iterable</a> <a class="rlink" href="grammar.html#definition-statement">statement</a>
+    for <a class="rlink" href="grammar.html#definition-for-modifiers">for-modifiers</a><sub>opt</sub> <a class="rlink" href="grammar.html#definition-for-iterator">for-iterator</a><sub>opt</sub> <a class="rlink" href="grammar.html#definition-iterable">iterable</a> { statement-list<sub>opt</sub> }</pre>
+</div>
+
+<div class="definition" id="definition-for-modifiers">
+    <h2 class="line-text">For Modifiers</h2>
+    <p>
+        Modifiers that alter for loop behavior. <code>&lt;</code> reverses iteration order, <code>*</code> dereferences the iterator to get a pointer to each element.
+    </p>
+    <pre>for-modifiers:
+    &lt;
+    *
+    &lt; *
+    * &lt;</pre>
+</div>
+
+<div class="definition" id="definition-for-iterator">
+    <h2 class="line-text">For Iterator</h2>
+    <p>
+        Optional explicit naming of loop variables. If omitted, <a class="rlink" href="grammar.html#definition-primary-expression"><code>it</code> and <code>it_index</code></a> are used implicitly.
+    </p>
+    <pre>for-iterator:
+    identifier :
+    identifier : identifier :</pre>
+</div>
+
+<div class="definition" id="definition-iterable">
+    <h2 class="line-text">Iterable</h2>
+    <p>
+        Values that can be iterated over in a <a class="rlink" href="grammar.html#definition-for-loop">for loop</a>.
+    </p>
+    <pre>iterable:
+    <a class="rlink" href="grammar.html#definition-range-expression">range-expression</a>
+    <a class="rlink" href="grammar.html#definition-expression">expression</a></pre>
+</div>
+
+<div class="definition" id="definition-range-expression">
+    <h2 class="line-text">Range Expression</h2>
+    <p>
+        Defines an integer range for iteration. Used in <a class="rlink" href="grammar.html#definition-for-loop">for loops</a>.
+    </p>
+    <pre>range-expression:
+    <a class="rlink" href="grammar.html#definition-expression">expression</a> .. <a class="rlink" href="grammar.html#definition-expression">expression</a></pre>
+</div>
+
+<div class="definition" id="definition-while-loop">
+    <h2 class="line-text">While Loop</h2>
+    <p>
+        A condition-based loop. See also: <a class="rlink" href="grammar.html#definition-named-loop">named loops</a>, <a class="rlink" href="grammar.html#definition-jump-statements">jump statements</a>.
+    </p>
+    <pre>while-statement:
+    while <a class="rlink" href="grammar.html#definition-expression">expression</a> <a class="rlink" href="grammar.html#definition-statement">statement</a>
+    while <a class="rlink" href="grammar.html#definition-expression">expression</a> { statement-list<sub>opt</sub> }</pre>
+</div>
+
+<div class="definition" id="definition-named-loop">
+    <h2 class="line-text">Named Loop</h2>
+    <p>
+        A named loop allows <a class="rlink" href="grammar.html#definition-jump-statements">break and continue</a> statements to target specific outer loops.
+    </p>
+    <pre>named-loop-statement:
+    identifier : <a class="rlink" href="grammar.html#definition-for-loop">for-statement</a>
+    identifier : <a class="rlink" href="grammar.html#definition-while-loop">while-statement</a></pre>
+</div>
+
+<div class="definition" id="definition-jump-statements">
+    <h2 class="line-text">Jump Statements</h2>
+    <p>
+        Control flow statements for breaking out of loops, continuing to next iteration, or returning from functions.
+    </p>
+    <pre>jump-statement:
+    break-statement
+    continue-statement
+    return-statement
+
+break-statement:
+    break ;
+    break identifier ;
+
+continue-statement:
+    continue ;
+    continue identifier ;
+
+return-statement:
+    return ;
+    return <a class="rlink" href="grammar.html#definition-expression">expression</a> ;
+    return <a class="rlink" href="grammar.html#definition-expression">expression-list</a> ;
+
+expression-list:
+    <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    expression-list , <a class="rlink" href="grammar.html#definition-expression">expression</a></pre>
+</div>
+
+<div class="definition" id="definition-if-statement">
+    <h2 class="line-text">If Statement</h2>
+    <p>
+        Conditional execution. For compile-time conditionals, see <a class="rlink" href="grammar.html#definition-if-directive">#if directive</a>. For switch-like behavior, see <a class="rlink" href="grammar.html#definition-if-case-statement">if-case statement</a>.
+    </p>
+    <pre>if-statement:
+    if <a class="rlink" href="grammar.html#definition-expression">expression</a> <a class="rlink" href="grammar.html#definition-statement">statement</a>
+    if <a class="rlink" href="grammar.html#definition-expression">expression</a> <a class="rlink" href="grammar.html#definition-statement">statement</a> else <a class="rlink" href="grammar.html#definition-statement">statement</a>
+    if <a class="rlink" href="grammar.html#definition-expression">expression</a> { statement-list<sub>opt</sub> }
+    if <a class="rlink" href="grammar.html#definition-expression">expression</a> { statement-list<sub>opt</sub> } else { statement-list<sub>opt</sub> }
+    if <a class="rlink" href="grammar.html#definition-expression">expression</a> { statement-list<sub>opt</sub> } else if-statement
+    if <a class="rlink" href="grammar.html#definition-expression">expression</a> then <a class="rlink" href="grammar.html#definition-expression">expression</a> else <a class="rlink" href="grammar.html#definition-expression">expression</a></pre>
+</div>
+
+<div class="definition" id="definition-if-case-statement">
+    <h2 class="line-text">If Case Statement</h2>
+    <p>
+        A switch-like construct using <code>if</code> with <code>case</code>. Supports <code>#complete</code> for exhaustiveness checking with <a class="rlink" href="grammar.html#definition-enum-declaration">enums</a>. Use <code>#through</code> for fallthrough behavior.
+    </p>
+    <pre>if-case-statement:
+    if <a class="rlink" href="grammar.html#definition-expression">expression</a> == if-case-modifiers<sub>opt</sub> { case-list }
+
+if-case-modifiers:
+    #complete
+
+case-list:
+    case-clause
+    case-list case-clause
+
+case-clause:
+    case <a class="rlink" href="grammar.html#definition-expression">expression</a> ; case-body
+    case <a class="rlink" href="grammar.html#definition-expression">expression</a> ; #through ;
+    case ; case-body
+
+case-body:
+    statement-list<sub>opt</sub></pre>
+</div>
+
+<div class="definition" id="definition-defer-statement">
+    <h2 class="line-text">Defer Statement</h2>
+    <p>
+        Defers execution of a statement until the end of the current scope. Useful for cleanup operations.
+    </p>
+    <pre>defer-statement:
+    defer <a class="rlink" href="grammar.html#definition-statement">statement</a>
+    defer { statement-list<sub>opt</sub> }</pre>
+</div>
+
+<div class="definition" id="definition-using-statement">
+    <h2 class="line-text">Using Statement</h2>
+    <p>
+        Brings members of a <a class="rlink" href="grammar.html#definition-struct-declaration">struct</a> or namespace into the current scope. Also used in <a class="rlink" href="grammar.html#definition-struct-using">struct member declarations</a> and <a class="rlink" href="grammar.html#definition-parameter-modifiers">function parameters</a>.
+    </p>
+    <pre>using-statement:
+    using <a class="rlink" href="grammar.html#definition-expression">expression</a> ;
+    using identifier ;</pre>
+</div>
+
+<div class="definition" id="definition-push-context">
+    <h2 class="line-text">Push Context</h2>
+    <p>
+        Temporarily modifies the implicit context for a block of code. The context contains allocator, logger, and other runtime settings.
+    </p>
+    <pre>push-context-statement:
+    push_context <a class="rlink" href="grammar.html#definition-expression">expression</a> { statement-list<sub>opt</sub> }</pre>
+</div>
+
+<hr>
+
+<h2>Declarations</h2>
+
+<div class="definition" id="definition-variable-declaration">
+    <h2 class="line-text">Variable Declaration</h2>
+    <p>
+        Declares variables with various combinations of explicit types, initial values, and constness. Uses <code>:</code> for type annotation, <code>=</code> for runtime initialization, and <code>::</code> for compile-time constants.
+    </p>
+    <pre>variable-declaration:
+    identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> ;
+    identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> = <a class="rlink" href="grammar.html#definition-expression">expression</a> ;
+    identifier := <a class="rlink" href="grammar.html#definition-expression">expression</a> ;
+    identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> : <a class="rlink" href="grammar.html#definition-expression">expression</a> ;
+    identifier :: <a class="rlink" href="grammar.html#definition-expression">expression</a> ;
+    identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> = --- ;
+    identifier-list : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> ;
+    identifier-list := <a class="rlink" href="grammar.html#definition-expression">expression</a> ;
+    identifier-list : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> = <a class="rlink" href="grammar.html#definition-expression">expression-list</a> ;
+
+identifier-list:
+    identifier
+    identifier-list , identifier</pre>
+</div>
+
+<div class="definition" id="definition-function-declaration">
+    <h2 class="line-text">Function Declaration</h2>
+    <p>
+        Declares a procedure with optional parameters and return types. See also: <a class="rlink" href="grammar.html#definition-function-modifiers">function modifiers</a>, <a class="rlink" href="grammar.html#definition-parameter-modifiers">parameter modifiers</a>, <a class="rlink" href="grammar.html#definition-lambda-expression">lambda expressions</a>.
+    </p>
+    <pre>function-declaration:
+    identifier :: <a class="rlink" href="grammar.html#definition-function-signature">function-signature</a> <a class="rlink" href="grammar.html#definition-function-body">function-body</a>
+    identifier :: <a class="rlink" href="grammar.html#definition-function-signature">function-signature</a> <a class="rlink" href="grammar.html#definition-function-modifiers">function-modifiers</a> <a class="rlink" href="grammar.html#definition-function-body">function-body</a>
+    identifier :: <a class="rlink" href="grammar.html#definition-function-signature">function-signature</a> <a class="rlink" href="grammar.html#definition-function-modifiers">function-modifiers</a></pre>
+</div>
+
+<div class="definition" id="definition-function-signature">
+    <h2 class="line-text">Function Signature</h2>
+    <p>
+        The parameter and return type specification of a <a class="rlink" href="grammar.html#definition-function-declaration">function</a>. Also used in <a class="rlink" href="grammar.html#definition-procedure-type">procedure types</a>.
+    </p>
+    <pre>function-signature:
+    ( <a class="rlink" href="grammar.html#definition-parameter-list">parameter-list</a><sub>opt</sub> )
+    ( <a class="rlink" href="grammar.html#definition-parameter-list">parameter-list</a><sub>opt</sub> ) -> <a class="rlink" href="grammar.html#definition-return-specification">return-specification</a>
+
+return-specification:
+    <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a>
+    ( <a class="rlink" href="grammar.html#definition-return-list">return-list</a> )</pre>
+</div>
+
+<div class="definition" id="definition-parameter-list">
+    <h2 class="line-text">Parameter List</h2>
+    <p>
+        Function parameters. See <a class="rlink" href="grammar.html#definition-parameter-modifiers">parameter modifiers</a> for <code>using</code>, <code>$</code> (compile-time), and other parameter options.
+    </p>
+    <pre>parameter-list:
+    <a class="rlink" href="grammar.html#definition-parameter">parameter</a>
+    parameter-list , <a class="rlink" href="grammar.html#definition-parameter">parameter</a>
+
+parameter:
+    <a class="rlink" href="grammar.html#definition-parameter-modifiers">parameter-modifiers</a><sub>opt</sub> identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a>
+    <a class="rlink" href="grammar.html#definition-parameter-modifiers">parameter-modifiers</a><sub>opt</sub> identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> = <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    <a class="rlink" href="grammar.html#definition-parameter-modifiers">parameter-modifiers</a><sub>opt</sub> identifier := <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    <a class="rlink" href="grammar.html#definition-parameter-modifiers">parameter-modifiers</a><sub>opt</sub> $ identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a>
+    <a class="rlink" href="grammar.html#definition-parameter-modifiers">parameter-modifiers</a><sub>opt</sub> $$ identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a>
+    <a class="rlink" href="grammar.html#definition-parameter-modifiers">parameter-modifiers</a><sub>opt</sub> identifier : .. <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a></pre>
+</div>
+
+<div class="definition" id="definition-return-list">
+    <h2 class="line-text">Return List</h2>
+    <p>
+        Multiple return values for <a class="rlink" href="grammar.html#definition-function-declaration">functions</a>. Values can be optionally named.
+    </p>
+    <pre>return-list:
+    <a class="rlink" href="grammar.html#definition-return-item">return-item</a>
+    return-list , <a class="rlink" href="grammar.html#definition-return-item">return-item</a>
+
+return-item:
+    <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a>
+    identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a>
+    identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> = <a class="rlink" href="grammar.html#definition-expression">expression</a></pre>
+</div>
+
+<div class="definition" id="definition-function-body">
+    <h2 class="line-text">Function Body</h2>
+    <p>
+        The implementation of a <a class="rlink" href="grammar.html#definition-function-declaration">function</a>. May contain <a class="rlink" href="grammar.html#definition-insert-directive">#insert</a> for code injection.
+    </p>
+    <pre>function-body:
+    { statement-list<sub>opt</sub> }
+    #no_context { statement-list<sub>opt</sub> }</pre>
+</div>
+
+<div class="definition" id="definition-struct-declaration">
+    <h2 class="line-text">Struct Declaration</h2>
+    <p>
+        Declares a compound data type. Supports <a class="rlink" href="grammar.html#definition-struct-using">using</a> for member promotion, <a class="rlink" href="grammar.html#definition-struct-place">#place</a> for memory layout control, and <a class="rlink" href="grammar.html#definition-struct-modifiers">modifiers</a> like <code>#packed</code>.
+    </p>
+    <pre>struct-declaration:
+    identifier :: struct <a class="rlink" href="grammar.html#definition-struct-modifiers">struct-modifiers</a><sub>opt</sub> { <a class="rlink" href="grammar.html#definition-member-list">member-list</a><sub>opt</sub> }
+    identifier :: struct <a class="rlink" href="grammar.html#definition-struct-parameters">struct-parameters</a> <a class="rlink" href="grammar.html#definition-struct-modifiers">struct-modifiers</a><sub>opt</sub> { <a class="rlink" href="grammar.html#definition-member-list">member-list</a><sub>opt</sub> }</pre>
+</div>
+
+<div class="definition" id="definition-struct-parameters">
+    <h2 class="line-text">Struct Parameters</h2>
+    <p>
+        Compile-time parameters for polymorphic <a class="rlink" href="grammar.html#definition-struct-declaration">structs</a>. Similar to generics in other languages.
+    </p>
+    <pre>struct-parameters:
+    ( <a class="rlink" href="grammar.html#definition-parameter-list">parameter-list</a> )</pre>
+</div>
+
+<div class="definition" id="definition-member-list">
+    <h2 class="line-text">Member List</h2>
+    <p>
+        Members of a <a class="rlink" href="grammar.html#definition-struct-declaration">struct</a>. May include <a class="rlink" href="grammar.html#definition-struct-using">using</a> declarations, <a class="rlink" href="grammar.html#definition-struct-place">#place</a> directives, and <a class="rlink" href="grammar.html#definition-insert-directive">#insert</a> code.
+    </p>
+    <pre>member-list:
+    <a class="rlink" href="grammar.html#definition-member">member</a>
+    member-list <a class="rlink" href="grammar.html#definition-member">member</a>
+
+member:
+    identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> ;
+    identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> = <a class="rlink" href="grammar.html#definition-expression">expression</a> ;
+    identifier := <a class="rlink" href="grammar.html#definition-expression">expression</a> ;
+    identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> = --- ;
+    <a class="rlink" href="grammar.html#definition-struct-using">using-member</a>
+    <a class="rlink" href="grammar.html#definition-struct-place">place-directive</a>
+    <a class="rlink" href="grammar.html#definition-insert-directive">#insert-directive</a>
+    <a class="rlink" href="grammar.html#definition-if-directive">#if-directive</a>
+    <a class="rlink" href="grammar.html#definition-notes">note</a><sub>opt</sub> identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> ;</pre>
+</div>
+
+<div class="definition" id="definition-struct-using">
+    <h2 class="line-text">Using in Structs</h2>
+    <p>
+        Promotes members of an embedded <a class="rlink" href="grammar.html#definition-struct-declaration">struct</a> to the parent scope, enabling inheritance-like patterns. See also: <a class="rlink" href="grammar.html#definition-using-statement">using statement</a>.
+    </p>
+    <pre>using-member:
+    using identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> ;
+    using identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> = <a class="rlink" href="grammar.html#definition-expression">expression</a> ;
+    using , identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> ;</pre>
+</div>
+
+<div class="definition" id="definition-struct-place">
+    <h2 class="line-text">Place Directive in Structs</h2>
+    <p>
+        Controls memory layout by placing a member at a specific offset or overlapping with another member. Useful for unions-within-structs and memory-mapped I/O.
+    </p>
+    <pre>place-directive:
+    #place identifier ;</pre>
+</div>
+
+<div class="definition" id="definition-struct-modifiers">
+    <h2 class="line-text">Struct Modifiers</h2>
+    <p>
+        Modifiers that change <a class="rlink" href="grammar.html#definition-struct-declaration">struct</a> behavior and layout.
+    </p>
+    <pre>struct-modifiers:
+    struct-modifier
+    struct-modifiers struct-modifier
+
+struct-modifier:
+    #packed
+    #align <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    #type_info_none
+    #type_info_procedures_are_void_pointers
+    #no_padding</pre>
+</div>
+
+<div class="definition" id="definition-enum-declaration">
+    <h2 class="line-text">Enum Declaration</h2>
+    <p>
+        Declares an enumeration type. Can specify underlying type. See also: <a class="rlink" href="grammar.html#definition-enum-flags-declaration">enum_flags</a> for bitfield enums.
+    </p>
+    <pre>enum-declaration:
+    identifier :: enum <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a><sub>opt</sub> { <a class="rlink" href="grammar.html#definition-enumerator-list">enumerator-list</a><sub>opt</sub> }
+    identifier :: enum <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a><sub>opt</sub> #specified { <a class="rlink" href="grammar.html#definition-enumerator-list">enumerator-list</a><sub>opt</sub> }</pre>
+</div>
+
+<div class="definition" id="definition-enumerator-list">
+    <h2 class="line-text">Enumerator List</h2>
+    <p>
+        The values in an <a class="rlink" href="grammar.html#definition-enum-declaration">enum</a> or <a class="rlink" href="grammar.html#definition-enum-flags-declaration">enum_flags</a>.
+    </p>
+    <pre>enumerator-list:
+    <a class="rlink" href="grammar.html#definition-enumerator">enumerator</a>
+    enumerator-list <a class="rlink" href="grammar.html#definition-enumerator">enumerator</a>
+
+enumerator:
+    identifier ;
+    identifier :: <a class="rlink" href="grammar.html#definition-expression">expression</a> ;
+    <a class="rlink" href="grammar.html#definition-notes">note</a><sub>opt</sub> identifier ;</pre>
+</div>
+
+<div class="definition" id="definition-enum-flags-declaration">
+    <h2 class="line-text">Enum Flags Declaration</h2>
+    <p>
+        Declares a bitfield enumeration where each value is automatically a power of two. Supports bitwise operations. See also: <a class="rlink" href="grammar.html#definition-enum-declaration">enum</a>.
+    </p>
+    <pre>enum-flags-declaration:
+    identifier :: enum_flags <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a><sub>opt</sub> { <a class="rlink" href="grammar.html#definition-enumerator-list">enumerator-list</a><sub>opt</sub> }</pre>
+</div>
+
+<div class="definition" id="definition-union-declaration">
+    <h2 class="line-text">Union Declaration</h2>
+    <p>
+        Declares a union type where all members share the same memory location.
+    </p>
+    <pre>union-declaration:
+    identifier :: union { <a class="rlink" href="grammar.html#definition-member-list">member-list</a><sub>opt</sub> }</pre>
+</div>
+
+<hr>
+
+<h2>Expressions</h2>
+
+<div class="definition" id="definition-expression">
+    <h2 class="line-text">Expression</h2>
+    <p>
+        The general expression hierarchy following operator precedence.
+    </p>
+    <pre>expression:
+    <a class="rlink" href="grammar.html#definition-assignment-expression">assignment-expression</a>
+    <a class="rlink" href="grammar.html#definition-lambda-expression">lambda-expression</a>
+    <a class="rlink" href="grammar.html#definition-run-directive">#run-expression</a>
+    <a class="rlink" href="grammar.html#definition-code-directive">#code-expression</a></pre>
+</div>
+
+<div class="definition" id="definition-primary-expression">
+    <h2 class="line-text">Primary Expression</h2>
+    <p>
+        The most basic expressions. <code>it</code> and <code>it_index</code> are implicit loop variables in <a class="rlink" href="grammar.html#definition-for-loop">for loops</a>.
+    </p>
+    <pre>primary-expression:
+    identifier
+    <a class="rlink" href="grammar.html#definition-literal">literal</a>
+    ( <a class="rlink" href="grammar.html#definition-expression">expression</a> )
+    it
+    it_index
+    <a class="rlink" href="grammar.html#definition-struct-literal">struct-literal</a>
+    <a class="rlink" href="grammar.html#definition-array-literal">array-literal</a>
+    <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a>
+    type_of ( <a class="rlink" href="grammar.html#definition-expression">expression</a> )
+    size_of ( <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> )
+    <a class="rlink" href="grammar.html#definition-type-directive">#type</a>
+    <a class="rlink" href="grammar.html#definition-char-directive">#char</a> string-literal
+    <a class="rlink" href="grammar.html#definition-string-directive">#string</a>
+    context
+    #caller_location
+    #location ( identifier )</pre>
+</div>
+
+<div class="definition" id="definition-literal">
+    <h2 class="line-text">Literal</h2>
+    <p>
+        Constant values in source code.
+    </p>
+    <pre>literal:
+    integer-literal
+    float-literal
+    string-literal
+    character-literal
+    true
+    false
+    null
+
+integer-literal:
+    decimal-literal
+    0x hexadecimal-literal
+    0b binary-literal
+    0o octal-literal
+
+string-literal:
+    " character-sequence<sub>opt</sub> "
+    <a class="rlink" href="grammar.html#definition-string-directive">#string</a> delimiter</pre>
+</div>
+
+<div class="definition" id="definition-postfix-expression">
+    <h2 class="line-text">Postfix Expression</h2>
+    <p>
+        Array indexing, function calls, and member access.
+    </p>
+    <pre>postfix-expression:
+    <a class="rlink" href="grammar.html#definition-primary-expression">primary-expression</a>
+    postfix-expression [ <a class="rlink" href="grammar.html#definition-expression">expression</a> ]
+    postfix-expression ( <a class="rlink" href="grammar.html#definition-argument-list">argument-list</a><sub>opt</sub> )
+    postfix-expression . identifier
+    postfix-expression . <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a></pre>
+</div>
+
+<div class="definition" id="definition-argument-list">
+    <h2 class="line-text">Argument List</h2>
+    <p>
+        Arguments to a function call. Supports named arguments and spread operator.
+    </p>
+    <pre>argument-list:
+    <a class="rlink" href="grammar.html#definition-argument">argument</a>
+    argument-list , <a class="rlink" href="grammar.html#definition-argument">argument</a>
+
+argument:
+    <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    identifier = <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    .. <a class="rlink" href="grammar.html#definition-expression">expression</a></pre>
+</div>
+
+<div class="definition" id="definition-unary-expression">
+    <h2 class="line-text">Unary Expression</h2>
+    <p>
+        Prefix operators. <code>*</code> dereferences pointers, <code>&lt;&lt;</code> is an alternate dereference syntax, <code>xx</code> is auto-cast.
+    </p>
+    <pre>unary-expression:
+    <a class="rlink" href="grammar.html#definition-postfix-expression">postfix-expression</a>
+    * unary-expression
+    &lt;&lt; unary-expression
+    &amp; unary-expression
+    - unary-expression
+    + unary-expression
+    ! unary-expression
+    ~ unary-expression
+    xx unary-expression
+    xx , unary-expression
+    <a class="rlink" href="grammar.html#definition-cast-expression">cast-expression</a></pre>
+</div>
+
+<div class="definition" id="definition-cast-expression">
+    <h2 class="line-text">Cast Expression</h2>
+    <p>
+        Explicit type conversion. Various cast modes control overflow and bounds checking. See also: <code>xx</code> (auto-cast) in <a class="rlink" href="grammar.html#definition-unary-expression">unary expressions</a>.
+    </p>
+    <pre>cast-expression:
+    cast ( <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> ) <a class="rlink" href="grammar.html#definition-unary-expression">unary-expression</a>
+    cast , cast-modifier ( <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> ) <a class="rlink" href="grammar.html#definition-unary-expression">unary-expression</a>
+    cast ( ) <a class="rlink" href="grammar.html#definition-unary-expression">unary-expression</a>
+
+cast-modifier:
+    no_check
+    trunc</pre>
+</div>
+
+<div class="definition" id="definition-binary-expression">
+    <h2 class="line-text">Binary Expression</h2>
+    <p>
+        Binary operators with standard precedence rules. From lowest to highest: logical OR, logical AND, equality, relational, additive, multiplicative.
+    </p>
+    <pre>multiplicative-expression:
+    <a class="rlink" href="grammar.html#definition-unary-expression">unary-expression</a>
+    multiplicative-expression * <a class="rlink" href="grammar.html#definition-unary-expression">unary-expression</a>
+    multiplicative-expression / <a class="rlink" href="grammar.html#definition-unary-expression">unary-expression</a>
+    multiplicative-expression % <a class="rlink" href="grammar.html#definition-unary-expression">unary-expression</a>
+
+additive-expression:
+    multiplicative-expression
+    additive-expression + multiplicative-expression
+    additive-expression - multiplicative-expression
+
+shift-expression:
+    additive-expression
+    shift-expression &lt;&lt; additive-expression
+    shift-expression &gt;&gt; additive-expression
+    shift-expression &gt;&gt;&gt; additive-expression
+
+bitwise-and-expression:
+    shift-expression
+    bitwise-and-expression &amp; shift-expression
+
+bitwise-xor-expression:
+    bitwise-and-expression
+    bitwise-xor-expression ^ bitwise-and-expression
+
+bitwise-or-expression:
+    bitwise-xor-expression
+    bitwise-or-expression | bitwise-xor-expression
+
+relational-expression:
+    bitwise-or-expression
+    relational-expression &lt; bitwise-or-expression
+    relational-expression &gt; bitwise-or-expression
+    relational-expression &lt;= bitwise-or-expression
+    relational-expression &gt;= bitwise-or-expression
+
+equality-expression:
+    relational-expression
+    equality-expression == relational-expression
+    equality-expression != relational-expression
+
+logical-and-expression:
+    equality-expression
+    logical-and-expression &amp;&amp; equality-expression
+
+logical-or-expression:
+    logical-and-expression
+    logical-or-expression || logical-and-expression</pre>
+</div>
+
+<div class="definition" id="definition-assignment-expression">
+    <h2 class="line-text">Assignment Expression</h2>
+    <p>
+        Assignment and compound assignment operators.
+    </p>
+    <pre>assignment-expression:
+    <a class="rlink" href="grammar.html#definition-binary-expression">logical-or-expression</a>
+    <a class="rlink" href="grammar.html#definition-unary-expression">unary-expression</a> assignment-operator assignment-expression
+
+assignment-operator:
+    =
+    +=
+    -=
+    *=
+    /=
+    %=
+    &amp;=
+    |=
+    ^=
+    &lt;&lt;=
+    &gt;&gt;=</pre>
+</div>
+
+<div class="definition" id="definition-lambda-expression">
+    <h2 class="line-text">Lambda Expression</h2>
+    <p>
+        Anonymous functions. Can capture context or be marked <code>#no_context</code>. See also: <a class="rlink" href="grammar.html#definition-function-declaration">function declarations</a>.
+    </p>
+    <pre>lambda-expression:
+    ( <a class="rlink" href="grammar.html#definition-parameter-list">parameter-list</a><sub>opt</sub> ) <a class="rlink" href="grammar.html#definition-function-body">function-body</a>
+    ( <a class="rlink" href="grammar.html#definition-parameter-list">parameter-list</a><sub>opt</sub> ) -> <a class="rlink" href="grammar.html#definition-return-specification">return-specification</a> <a class="rlink" href="grammar.html#definition-function-body">function-body</a>
+    ( <a class="rlink" href="grammar.html#definition-parameter-list">parameter-list</a><sub>opt</sub> ) <a class="rlink" href="grammar.html#definition-function-modifiers">function-modifiers</a><sub>opt</sub> => <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    identifier => <a class="rlink" href="grammar.html#definition-expression">expression</a></pre>
+</div>
+
+<div class="definition" id="definition-struct-literal">
+    <h2 class="line-text">Struct Literal</h2>
+    <p>
+        Initializes a <a class="rlink" href="grammar.html#definition-struct-declaration">struct</a> with values. Fields can be named or positional.
+    </p>
+    <pre>struct-literal:
+    <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> . { <a class="rlink" href="grammar.html#definition-field-initializer-list">field-initializer-list</a><sub>opt</sub> }
+    . { <a class="rlink" href="grammar.html#definition-field-initializer-list">field-initializer-list</a><sub>opt</sub> }
+
+field-initializer-list:
+    <a class="rlink" href="grammar.html#definition-field-initializer">field-initializer</a>
+    field-initializer-list , <a class="rlink" href="grammar.html#definition-field-initializer">field-initializer</a>
+
+field-initializer:
+    <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    identifier = <a class="rlink" href="grammar.html#definition-expression">expression</a></pre>
+</div>
+
+<div class="definition" id="definition-array-literal">
+    <h2 class="line-text">Array Literal</h2>
+    <p>
+        Initializes an <a class="rlink" href="grammar.html#definition-array-type">array</a> with values.
+    </p>
+    <pre>array-literal:
+    <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> . [ <a class="rlink" href="grammar.html#definition-expression">expression-list</a><sub>opt</sub> ]
+    . [ <a class="rlink" href="grammar.html#definition-expression">expression-list</a><sub>opt</sub> ]
+    <a class="rlink" href="grammar.html#definition-array-type">array-type</a> . [ <a class="rlink" href="grammar.html#definition-expression">expression-list</a><sub>opt</sub> ]</pre>
+</div>
+
+<hr>
+
+<h2>Types</h2>
+
+<div class="definition" id="definition-type-specifier">
+    <h2 class="line-text">Type Specifier</h2>
+    <p>
+        Specifies the type of a value. Includes <a class="rlink" href="grammar.html#definition-basic-type">basic types</a>, <a class="rlink" href="grammar.html#definition-pointer-type">pointers</a>, <a class="rlink" href="grammar.html#definition-array-type">arrays</a>, and <a class="rlink" href="grammar.html#definition-procedure-type">procedure types</a>.
+    </p>
+    <pre>type-specifier:
+    <a class="rlink" href="grammar.html#definition-basic-type">basic-type</a>
+    <a class="rlink" href="grammar.html#definition-pointer-type">pointer-type</a>
+    <a class="rlink" href="grammar.html#definition-array-type">array-type</a>
+    <a class="rlink" href="grammar.html#definition-procedure-type">procedure-type</a>
+    identifier
+    $ identifier
+    $$ identifier
+    <a class="rlink" href="grammar.html#definition-type-directive">#type-expression</a></pre>
+</div>
+
+<div class="definition" id="definition-basic-type">
+    <h2 class="line-text">Basic Type</h2>
+    <p>
+        Built-in primitive types.
+    </p>
+    <pre>basic-type:
+    int
+    s8
+    s16
+    s32
+    s64
+    u8
+    u16
+    u32
+    u64
+    float
+    float32
+    float64
+    bool
+    string
+    void
+    Any
+    Type</pre>
+</div>
+
+<div class="definition" id="definition-pointer-type">
+    <h2 class="line-text">Pointer Type</h2>
+    <p>
+        A pointer to another type. See also: <a class="rlink" href="grammar.html#definition-unary-expression">dereference operators</a>.
+    </p>
+    <pre>pointer-type:
+    * <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a>
+    *void</pre>
+</div>
+
+<div class="definition" id="definition-array-type">
+    <h2 class="line-text">Array Type</h2>
+    <p>
+        Fixed-size arrays, dynamic arrays, and slices (views into arrays).
+    </p>
+    <pre>array-type:
+    [ <a class="rlink" href="grammar.html#definition-expression">expression</a> ] <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a>
+    [ .. ] <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a>
+    [ ] <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a>
+    [..] <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a></pre>
+</div>
+
+<div class="definition" id="definition-procedure-type">
+    <h2 class="line-text">Procedure Type</h2>
+    <p>
+        The type of a <a class="rlink" href="grammar.html#definition-function-declaration">function</a> or <a class="rlink" href="grammar.html#definition-lambda-expression">lambda</a>. Can be used for function pointers and callbacks.
+    </p>
+    <pre>procedure-type:
+    <a class="rlink" href="grammar.html#definition-type-directive">#type</a> ( <a class="rlink" href="grammar.html#definition-parameter-list">parameter-list</a><sub>opt</sub> )
+    <a class="rlink" href="grammar.html#definition-type-directive">#type</a> ( <a class="rlink" href="grammar.html#definition-parameter-list">parameter-list</a><sub>opt</sub> ) -> <a class="rlink" href="grammar.html#definition-return-specification">return-specification</a>
+    <a class="rlink" href="grammar.html#definition-type-directive">#type</a> ( <a class="rlink" href="grammar.html#definition-parameter-list">parameter-list</a><sub>opt</sub> ) <a class="rlink" href="grammar.html#definition-function-modifiers">function-modifiers</a>
+    <a class="rlink" href="grammar.html#definition-type-directive">#type</a> ( <a class="rlink" href="grammar.html#definition-parameter-list">parameter-list</a><sub>opt</sub> ) -> <a class="rlink" href="grammar.html#definition-return-specification">return-specification</a> <a class="rlink" href="grammar.html#definition-function-modifiers">function-modifiers</a></pre>
+</div>
+
+<hr>
+
+<h2>Compile-Time Directives</h2>
+
+<div class="definition" id="definition-run-directive">
+    <h2 class="line-text">#run Directive</h2>
+    <p>
+        Executes code at compile time. The result can be used as a compile-time constant. See also: <a class="rlink" href="grammar.html#definition-code-directive">#code</a>, <a class="rlink" href="grammar.html#definition-insert-directive">#insert</a>.
+    </p>
+    <pre>#run-directive:
+    #run <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    #run { statement-list<sub>opt</sub> }
+    #run , <a class="rlink" href="grammar.html#definition-expression">expression</a></pre>
+</div>
+
+<div class="definition" id="definition-code-directive">
+    <h2 class="line-text">#code Directive</h2>
+    <p>
+        Captures code as a first-class value of type <code>Code</code>. Used with <a class="rlink" href="grammar.html#definition-insert-directive">#insert</a> for metaprogramming. See also: <a class="rlink" href="grammar.html#definition-run-directive">#run</a>.
+    </p>
+    <pre>#code-directive:
+    #code <a class="rlink" href="grammar.html#definition-statement">statement</a>
+    #code { statement-list<sub>opt</sub> }
+    #code , <a class="rlink" href="grammar.html#definition-expression">expression</a></pre>
+</div>
+
+<div class="definition" id="definition-insert-directive">
+    <h2 class="line-text">#insert Directive</h2>
+    <p>
+        Inserts code (from a <code>Code</code> value or string) at the current location. Can be used in <a class="rlink" href="grammar.html#definition-function-body">function bodies</a> and <a class="rlink" href="grammar.html#definition-struct-declaration">struct declarations</a>. See also: <a class="rlink" href="grammar.html#definition-code-directive">#code</a>.
+    </p>
+    <pre>#insert-directive:
+    #insert <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    #insert , <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    #insert_internal <a class="rlink" href="grammar.html#definition-expression">expression</a></pre>
+</div>
+
+<div class="definition" id="definition-if-directive">
+    <h2 class="line-text">#if Directive (Compile-Time If)</h2>
+    <p>
+        Compile-time conditional compilation. The condition must be evaluable at compile time. Unlike runtime <a class="rlink" href="grammar.html#definition-if-statement">if statements</a>, excluded branches are not compiled.
+    </p>
+    <pre>#if-directive:
+    #if <a class="rlink" href="grammar.html#definition-expression">expression</a> <a class="rlink" href="grammar.html#definition-statement">statement</a>
+    #if <a class="rlink" href="grammar.html#definition-expression">expression</a> { statement-list<sub>opt</sub> }
+    #if <a class="rlink" href="grammar.html#definition-expression">expression</a> { statement-list<sub>opt</sub> } else { statement-list<sub>opt</sub> }
+    #if <a class="rlink" href="grammar.html#definition-expression">expression</a> { statement-list<sub>opt</sub> } else #if-directive</pre>
+</div>
+
+<div class="definition" id="definition-import-directive">
+    <h2 class="line-text">#import Directive</h2>
+    <p>
+        Imports a module into the current compilation. Modules are searched in the modules path. See also: <a class="rlink" href="grammar.html#definition-load-directive">#load</a> for loading individual files.
+    </p>
+    <pre>#import-directive:
+    #import string-literal ;
+    #import string-literal ( <a class="rlink" href="grammar.html#definition-argument-list">argument-list</a><sub>opt</sub> ) ;
+    #import , identifier string-literal ;
+    identifier :: #import string-literal ;
+    identifier :: #import string-literal ( <a class="rlink" href="grammar.html#definition-argument-list">argument-list</a><sub>opt</sub> ) ;</pre>
+</div>
+
+<div class="definition" id="definition-load-directive">
+    <h2 class="line-text">#load Directive</h2>
+    <p>
+        Loads and compiles another source file as if its contents were included at this location. See also: <a class="rlink" href="grammar.html#definition-import-directive">#import</a> for module imports.
+    </p>
+    <pre>#load-directive:
+    #load string-literal ;</pre>
+</div>
+
+<div class="definition" id="definition-type-directive">
+    <h2 class="line-text">#type Directive</h2>
+    <p>
+        Used to construct <a class="rlink" href="grammar.html#definition-procedure-type">procedure types</a> and perform type operations.
+    </p>
+    <pre>#type-directive:
+    #type <a class="rlink" href="grammar.html#definition-procedure-type">procedure-type-body</a>
+    #type , <a class="rlink" href="grammar.html#definition-function-modifiers">function-modifiers</a> <a class="rlink" href="grammar.html#definition-procedure-type">procedure-type-body</a>
+
+procedure-type-body:
+    ( <a class="rlink" href="grammar.html#definition-parameter-list">parameter-list</a><sub>opt</sub> )
+    ( <a class="rlink" href="grammar.html#definition-parameter-list">parameter-list</a><sub>opt</sub> ) -> <a class="rlink" href="grammar.html#definition-return-specification">return-specification</a></pre>
+</div>
+
+<div class="definition" id="definition-char-directive">
+    <h2 class="line-text">#char Directive</h2>
+    <p>
+        Converts a single-character string literal to its integer character code value.
+    </p>
+    <pre>#char-directive:
+    #char string-literal</pre>
+</div>
+
+<div class="definition" id="definition-string-directive">
+    <h2 class="line-text">#string Directive</h2>
+    <p>
+        Creates a multi-line string literal with a custom delimiter. The string continues until the delimiter is encountered again.
+    </p>
+    <pre>#string-directive:
+    #string identifier
+        ... content ...
+    identifier</pre>
+</div>
+
+<div class="definition" id="definition-scope-directives">
+    <h2 class="line-text">Scope Directives</h2>
+    <p>
+        Control the visibility and export behavior of declarations.
+    </p>
+    <pre>scope-directive:
+    #scope_file
+    #scope_module
+    #scope_export
+    #add_context identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> ;
+    #add_context identifier : <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> = <a class="rlink" href="grammar.html#definition-expression">expression</a> ;</pre>
+</div>
+
+<div class="definition" id="definition-assert-directive">
+    <h2 class="line-text">#assert Directive</h2>
+    <p>
+        Compile-time assertion. The expression must evaluate to true at compile time, otherwise compilation fails with an error.
+    </p>
+    <pre>#assert-directive:
+    #assert <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    #assert <a class="rlink" href="grammar.html#definition-expression">expression</a> string-literal</pre>
+</div>
+
+<div class="definition" id="definition-foreign-directives">
+    <h2 class="line-text">Foreign Directives</h2>
+    <p>
+        Interface with external libraries and system calls. Used for FFI (Foreign Function Interface).
+    </p>
+    <pre>foreign-directive:
+    #foreign identifier
+    #foreign_library string-literal
+    #foreign_system_library string-literal
+
+foreign-function-declaration:
+    identifier :: ( <a class="rlink" href="grammar.html#definition-parameter-list">parameter-list</a><sub>opt</sub> ) -> <a class="rlink" href="grammar.html#definition-return-specification">return-specification</a><sub>opt</sub> #foreign identifier ;
+    identifier :: ( <a class="rlink" href="grammar.html#definition-parameter-list">parameter-list</a><sub>opt</sub> ) -> <a class="rlink" href="grammar.html#definition-return-specification">return-specification</a><sub>opt</sub> #foreign identifier string-literal ;</pre>
+</div>
+
+<div class="definition" id="definition-bake-directive">
+    <h2 class="line-text">#bake Directive</h2>
+    <p>
+        Creates a specialized version of a polymorphic <a class="rlink" href="grammar.html#definition-function-declaration">function</a> with some compile-time parameters fixed. See also: <a class="rlink" href="grammar.html#definition-parameter-modifiers">parameter modifiers</a> for <code>$</code> parameters.
+    </p>
+    <pre>#bake-directive:
+    #bake <a class="rlink" href="grammar.html#definition-expression">expression</a> ( <a class="rlink" href="grammar.html#definition-argument-list">argument-list</a><sub>opt</sub> )
+    #bake_arguments <a class="rlink" href="grammar.html#definition-expression">expression</a> ( <a class="rlink" href="grammar.html#definition-argument-list">argument-list</a><sub>opt</sub> )
+    #bake_constants <a class="rlink" href="grammar.html#definition-expression">expression</a> ( <a class="rlink" href="grammar.html#definition-argument-list">argument-list</a><sub>opt</sub> )</pre>
+</div>
+
+<div class="definition" id="definition-modify-directive">
+    <h2 class="line-text">#modify Directive</h2>
+    <p>
+        Used with polymorphic <a class="rlink" href="grammar.html#definition-function-declaration">functions</a> to constrain or transform type parameters during instantiation.
+    </p>
+    <pre>#modify-directive:
+    #modify <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    #modify { statement-list<sub>opt</sub> }</pre>
+</div>
+
+<div class="definition" id="definition-placeholder-directive">
+    <h2 class="line-text">#placeholder Directive</h2>
+    <p>
+        Declares a placeholder that must be filled in by another compilation unit. Used for dependency injection patterns.
+    </p>
+    <pre>#placeholder-directive:
+    identifier :: #placeholder;</pre>
+</div>
+
+<div class="definition" id="definition-through-directive">
+    <h2 class="line-text">#through Directive</h2>
+    <p>
+        Used in <a class="rlink" href="grammar.html#definition-if-case-statement">if-case statements</a> to fall through to the next case, similar to C switch fallthrough.
+    </p>
+    <pre>#through-directive:
+    #through</pre>
+</div>
+
+<div class="definition" id="definition-complete-directive">
+    <h2 class="line-text">#complete Directive</h2>
+    <p>
+        Used in <a class="rlink" href="grammar.html#definition-if-case-statement">if-case statements</a> to require that all <a class="rlink" href="grammar.html#definition-enum-declaration">enum</a> values are handled. Causes a compile error if a case is missing.
+    </p>
+    <pre>#complete-directive:
+    #complete</pre>
+</div>
+
+<div class="definition" id="definition-must-directive">
+    <h2 class="line-text">#must Directive</h2>
+    <p>
+        Marks a return value that must not be ignored. The compiler will error if the return value is discarded.
+    </p>
+    <pre>#must-directive:
+    #must</pre>
+</div>
+
+<div class="definition" id="definition-caller-location">
+    <h2 class="line-text">#caller_location</h2>
+    <p>
+        Returns the source location of the caller. Used for debugging and error reporting.
+    </p>
+    <pre>#caller_location-expression:
+    #caller_location</pre>
+</div>
+
+<div class="definition" id="definition-location-directive">
+    <h2 class="line-text">#location Directive</h2>
+    <p>
+        Returns the source location of an identifier's declaration.
+    </p>
+    <pre>#location-directive:
+    #location ( identifier )</pre>
+</div>
+
+<div class="definition" id="definition-filepath-directive">
+    <h2 class="line-text">#filepath Directive</h2>
+    <p>
+        Returns the file path of the current source file as a string.
+    </p>
+    <pre>#filepath-directive:
+    #filepath</pre>
+</div>
+
+<div class="definition" id="definition-line-directive">
+    <h2 class="line-text">#line Directive</h2>
+    <p>
+        Returns the current line number in the source file.
+    </p>
+    <pre>#line-directive:
+    #line</pre>
+</div>
+
+<div class="definition" id="definition-procedure-name-directive">
+    <h2 class="line-text">#procedure_name Directive</h2>
+    <p>
+        Returns the name of the current procedure as a string.
+    </p>
+    <pre>#procedure_name-directive:
+    #procedure_name</pre>
+</div>
+
+<hr>
+
+<h2>Modifiers and Annotations</h2>
+
+<div class="definition" id="definition-function-modifiers">
+    <h2 class="line-text">Function Modifiers</h2>
+    <p>
+        Modifiers that change <a class="rlink" href="grammar.html#definition-function-declaration">function</a> behavior, calling convention, or compilation. Multiple modifiers can be combined.
+    </p>
+    <pre>function-modifiers:
+    function-modifier
+    function-modifiers function-modifier
+
+function-modifier:
+    #inline
+    #no_inline
+    #c_call
+    #no_context
+    #compiler
+    #intrinsic
+    #runtime_support
+    #symmetric
+    #expand
+    #no_abc
+    #deprecated
+    #deprecated string-literal
+    <a class="rlink" href="grammar.html#definition-must-directive">#must</a>
+    <a class="rlink" href="grammar.html#definition-modify-directive">#modify-directive</a>
+    <a class="rlink" href="grammar.html#definition-foreign-directives">#foreign</a> identifier</pre>
+</div>
+
+<div class="definition" id="definition-parameter-modifiers">
+    <h2 class="line-text">Parameter Modifiers</h2>
+    <p>
+        Modifiers for <a class="rlink" href="grammar.html#definition-parameter-list">function parameters</a>. <code>using</code> brings struct members into scope, <code>$</code> makes parameters compile-time.
+    </p>
+    <pre>parameter-modifiers:
+    parameter-modifier
+    parameter-modifiers parameter-modifier
+
+parameter-modifier:
+    using
+    $
+    $$
+    *
+    #no_alias
+    #must</pre>
+</div>
+
+<div class="definition" id="definition-notes">
+    <h2 class="line-text">Notes</h2>
+    <p>
+        User-defined annotations attached to declarations. Can be queried at compile time using type introspection. Used for custom metaprogramming.
+    </p>
+    <pre>note:
+    @identifier
+    @identifier ( <a class="rlink" href="grammar.html#definition-expression">expression</a> )
+
+notes:
+    note
+    notes note</pre>
+</div>
+
+<hr>
+
+<h2>Special Constructs</h2>
+
+<div class="definition" id="definition-inline-assembly">
+    <h2 class="line-text">Inline Assembly</h2>
+    <p>
+        Embeds assembly code directly in Jai source.
+    </p>
+    <pre>inline-assembly:
+    #asm { assembly-instructions<sub>opt</sub> }
+    #asm <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> { assembly-instructions<sub>opt</sub> }
+    #bytes <a class="rlink" href="grammar.html#definition-expression">expression</a></pre>
+</div>
+
+<div class="definition" id="definition-uninitialized">
+    <h2 class="line-text">Uninitialized Values</h2>
+    <p>
+        The <code>---</code> token explicitly marks a variable as uninitialized, bypassing default initialization. Used in <a class="rlink" href="grammar.html#definition-variable-declaration">variable declarations</a> and <a class="rlink" href="grammar.html#definition-member-list">struct members</a>.
+    </p>
+    <pre>uninitialized:
+    ---</pre>
+</div>
+
+<div class="definition" id="definition-type-introspection">
+    <h2 class="line-text">Type Introspection</h2>
+    <p>
+        Built-in operations for examining types at compile time and runtime.
+    </p>
+    <pre>type-introspection:
+    type_of ( <a class="rlink" href="grammar.html#definition-expression">expression</a> )
+    size_of ( <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> )
+    type_info ( <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> )
+    is_constant ( <a class="rlink" href="grammar.html#definition-expression">expression</a> )
+    initializer_of ( <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> )</pre>
+</div>
+
+<div class="definition" id="definition-context">
+    <h2 class="line-text">Context</h2>
+    <p>
+        The implicit context passed to procedures. Contains allocator, logger, and other runtime settings. Modified with <a class="rlink" href="grammar.html#definition-push-context">push_context</a>.
+    </p>
+    <pre>context-expression:
+    context
+    context . identifier</pre>
+</div>
+
+<div class="definition" id="definition-new-delete">
+    <h2 class="line-text">New and Delete</h2>
+    <p>
+        Memory allocation using the context allocator.
+    </p>
+    <pre>new-expression:
+    New ( <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> )
+    New ( <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> , <a class="rlink" href="grammar.html#definition-expression">expression</a> )
+
+delete-expression:
+    free ( <a class="rlink" href="grammar.html#definition-expression">expression</a> )</pre>
+</div>
+
+<div class="definition" id="definition-autocast">
+    <h2 class="line-text">Autocast</h2>
+    <p>
+        The <code>xx</code> operator automatically casts a value to the expected type. Less explicit than <a class="rlink" href="grammar.html#definition-cast-expression">cast</a> but more convenient.
+    </p>
+    <pre>autocast-expression:
+    xx <a class="rlink" href="grammar.html#definition-unary-expression">unary-expression</a>
+    xx , <a class="rlink" href="grammar.html#definition-unary-expression">unary-expression</a></pre>
+</div>
+
+<div class="definition" id="definition-ifx-expression">
+    <h2 class="line-text">Ifx Expression (Ternary)</h2>
+    <p>
+        Conditional expression using <code>ifx</code> or <code>if then else</code> syntax. See also: <a class="rlink" href="grammar.html#definition-if-statement">if statement</a>.
+    </p>
+    <pre>ifx-expression:
+    ifx <a class="rlink" href="grammar.html#definition-expression">expression</a> then <a class="rlink" href="grammar.html#definition-expression">expression</a> else <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    ifx <a class="rlink" href="grammar.html#definition-expression">expression</a> <a class="rlink" href="grammar.html#definition-expression">expression</a> else <a class="rlink" href="grammar.html#definition-expression">expression</a></pre>
+</div>
+
+<div class="definition" id="definition-no-check">
+    <h2 class="line-text">#no_check Modifier</h2>
+    <p>
+        Disables runtime bounds checking and overflow checking for the following statement or expression.
+    </p>
+    <pre>#no_check:
+    #no_check <a class="rlink" href="grammar.html#definition-statement">statement</a></pre>
+</div>
+
+<hr>
+
+<h2>Memory and Pointers</h2>
+
+<div class="definition" id="definition-pointer-operations">
+    <h2 class="line-text">Pointer Operations</h2>
+    <p>
+        Operations on <a class="rlink" href="grammar.html#definition-pointer-type">pointers</a>.
+    </p>
+    <pre>pointer-operations:
+    * <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    &lt;&lt; <a class="rlink" href="grammar.html#definition-expression">expression</a>
+    &amp; <a class="rlink" href="grammar.html#definition-expression">expression</a>
+
+pointer-arithmetic:
+    <a class="rlink" href="grammar.html#definition-expression">pointer-expression</a> + <a class="rlink" href="grammar.html#definition-expression">integer-expression</a>
+    <a class="rlink" href="grammar.html#definition-expression">pointer-expression</a> - <a class="rlink" href="grammar.html#definition-expression">integer-expression</a>
+    <a class="rlink" href="grammar.html#definition-expression">pointer-expression</a> - <a class="rlink" href="grammar.html#definition-expression">pointer-expression</a></pre>
+</div>
+
+<div class="definition" id="definition-relative-pointers">
+    <h2 class="line-text">Relative Pointers</h2>
+    <p>
+        Pointers stored as offsets from their own location. Useful for serialization and memory-mapped structures.
+    </p>
+    <pre>relative-pointer-type:
+    *~ <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a>
+    *~<a class="rlink" href="grammar.html#definition-basic-type">integer-type</a> <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a></pre>
+</div>
+
+<hr>
+
+<h2>Operator Overloading</h2>
+
+<div class="definition" id="definition-operator-overload">
+    <h2 class="line-text">Operator Overloading</h2>
+    <p>
+        Define custom behavior for operators on user-defined types like <a class="rlink" href="grammar.html#definition-struct-declaration">structs</a>.
+    </p>
+    <pre>operator-overload:
+    operator <a class="rlink" href="grammar.html#definition-overloadable-operator">overloadable-operator</a> :: <a class="rlink" href="grammar.html#definition-function-signature">function-signature</a> <a class="rlink" href="grammar.html#definition-function-body">function-body</a>
+
+overloadable-operator:
+    +
+    -
+    *
+    /
+    %
+    ==
+    !=
+    &lt;
+    &gt;
+    &lt;=
+    &gt;=
+    []
+    []=
+    &lt;&lt;
+    &gt;&gt;</pre>
+</div>
+
+<div class="definition" id="definition-for-expansion">
+    <h2 class="line-text">For Expansion</h2>
+    <p>
+        Define custom iteration behavior for user-defined types in <a class="rlink" href="grammar.html#definition-for-loop">for loops</a>.
+    </p>
+    <pre>for-expansion:
+    for_expansion :: ( body : <a class="rlink" href="grammar.html#definition-code-directive">Code</a> , obj : * <a class="rlink" href="grammar.html#definition-type-specifier">type-specifier</a> , flags : For_Flags ) -> <a class="rlink" href="grammar.html#definition-code-directive">Code</a> <a class="rlink" href="grammar.html#definition-function-body">function-body</a></pre>
+</div>
+
+<hr>
+
+<div class="definition" id="definition-compilation-unit">
+    <h2 class="line-text">Compilation Unit</h2>
+    <p>
+        A complete Jai source file or module.
+    </p>
+    <pre>compilation-unit:
+    top-level-declaration-list<sub>opt</sub>
+
+top-level-declaration-list:
+    top-level-declaration
+    top-level-declaration-list top-level-declaration
+
+top-level-declaration:
+    <a class="rlink" href="grammar.html#definition-variable-declaration">variable-declaration</a>
+    <a class="rlink" href="grammar.html#definition-function-declaration">function-declaration</a>
+    <a class="rlink" href="grammar.html#definition-struct-declaration">struct-declaration</a>
+    <a class="rlink" href="grammar.html#definition-enum-declaration">enum-declaration</a>
+    <a class="rlink" href="grammar.html#definition-enum-flags-declaration">enum-flags-declaration</a>
+    <a class="rlink" href="grammar.html#definition-union-declaration">union-declaration</a>
+    <a class="rlink" href="grammar.html#definition-operator-overload">operator-overload</a>
+    <a class="rlink" href="grammar.html#definition-import-directive">#import-directive</a>
+    <a class="rlink" href="grammar.html#definition-load-directive">#load-directive</a>
+    <a class="rlink" href="grammar.html#definition-run-directive">#run-directive</a>
+    <a class="rlink" href="grammar.html#definition-scope-directives">scope-directive</a>
+    <a class="rlink" href="grammar.html#definition-if-directive">#if-directive</a>
+    <a class="rlink" href="grammar.html#definition-assert-directive">#assert-directive</a>
+    <a class="rlink" href="grammar.html#definition-placeholder-directive">#placeholder-directive</a></pre>
+</div>

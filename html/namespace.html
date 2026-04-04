@@ -1,0 +1,35 @@
+<div class="definition" id="definition-namespace">
+    <h2 class="line-text">Namespace</h2>
+    <p>
+        A namespace is a declarative region that provides a scope for identifiers such as variables, functions, classes, and other named entities. It helps organize code and prevents naming conflicts by allowing the same identifier to exist in different namespaces without collision.
+    </p>
+</div>
+
+<p>
+    As seen above a namespace can be thought of as a list of names of things. When you are "inside" of a namespace then you can refer to those things, but outside of the namespace, you cannot. An example of this might be a company directory within the "Engineering" department, you can refer to "John" and everyone knows who you mean, but in the "Marketing" department, "John" refers to a completely different person. Both departments have their own "namespace" for employee names. We say that you are "using" a namespace when you make all those names available.
+</p>
+
+<div class="definition" id="definition-collision">
+    <h2 class="line-text">Namespace Collision</h2>
+    <p>
+        A namespace collision occurs when two or more namespaces contain identifiers with the same name. When both namespaces are in use simultaneously, the compiler cannot determine which identifier you're referring to, resulting in ambiguity.
+    </p>
+</div>
+
+<p>
+    Returning to our company directory example: imagine both the Engineering and Marketing departments are collaborating on a project. If someone says "Ask John to review this," we have a problem which John do they mean? This is a namespace collision.
+</p>
+
+<p>
+    There are several common strategies for resolving such collisions:
+</p>
+
+<ul>
+    <li><strong>Fully qualified names</strong>: Explicitly specify which namespace the identifier belongs to (e.g., "Engineering.John" vs "Marketing.John")</li>
+    <li><strong>Selective imports</strong>: Only import the specific identifiers you need from each namespace</li>
+    <li><strong>Aliasing</strong>: Give one or both identifiers a different local name to distinguish them</li>
+</ul>
+
+<p>
+    In Jai, there are specific mechanisms for handling these collisions, which we will explore in detail later.
+</p>

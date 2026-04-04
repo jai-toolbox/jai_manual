@@ -1,0 +1,140 @@
+ :root {
+    /* Colors */
+    --bg-color: #1e1e1e;
+    --fg-color: #252526;
+
+    --text-color: #d4d4d4;
+    --link-color: #569cd6;
+
+    --link-hover-color: #9cdcfe;
+
+    --header-color: #ffffff;
+
+    --code-bg-color: #2d2d2d;
+    --code-text-color: #dcdcdc;
+
+    --table-bg-color: #252526;
+    --table-bg-color: #252526;
+    --table-border-color: #333;
+
+    --button-bg-color: #3c3c3c;
+    --button-border-color: #555;
+    
+    /* Layout */
+    --main-width: 90%;
+    /* Default width for small screens */
+    --main-padding: 1rem;
+}
+
+/* Large screen override */
+@media (min-width: 1024px) {
+    :root {
+        --main-width: 50%;
+        /* Width for large screens */
+    }
+}
+
+body,
+html {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+/* Links */
+a {
+    color: var(--link-color);
+}
+
+a:hover {
+    color: var(--link-hover-color);
+}
+
+/* Headers */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--header-color);
+}
+
+header,
+footer {
+    text-align: center;
+}
+
+hr {
+    width: var(--main-width);
+}
+
+main,
+article {
+    width: var(--main-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding: var(--main-padding);
+}
+
+/* Code blocks */
+pre,
+code {
+    background-color: var(--code-bg-color);
+    color: var(--code-text-color);
+    border-radius: 4px;
+    padding: 0.2em 0.4em;
+}
+
+/* Tables */
+table {
+    background-color: var(--table-bg-color);
+    color: var(--text-color);
+    border-color: var(--table-border-color);
+}
+
+th,
+td {
+    border: 1px solid var(--table-border-color);
+}
+
+details {
+    border: 1px solid var(--table-border-color);
+}
+
+/* Navigation / Sidebar */
+nav {
+    background-color: var(--table-bg-color);
+    color: var(--text-color);
+}
+
+/* Buttons */
+button,
+input[type="button"],
+input[type="submit"] {
+    background-color: var(--button-bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--button-border-color);
+}
+
+.definition {
+    background-color: var(--bg-color);
+    border: 1px solid var(--table-border-color);
+    padding: 1em;       /* inner spacing */
+    margin: 1em 0;      /* space outside the box */
+    border-radius: 6px; /* optional rounded corners */
+}
+
+.line-text {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 0.5em;  /* spacing from content */
+}
+
+.line-text::before,
+.line-text::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid var(--table-border-color);
+    margin: 0 0.5em;
+}
