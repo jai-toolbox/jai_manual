@@ -1,0 +1,17 @@
+<div class="definition" id="definition-pointer">
+    <h2 class="line-text">Pointer</h2>
+    <p>
+        A pointer is a u64, that holds a memory address. A pointer is usually pointing to a value of a specific type, if it is pointing to a value with type <code>T</code>, then the type of the pointer is <code>*T</code>.
+    </p>
+</div>
+
+<div class="definition" id="definition-pointer-dereference">
+    <h2 class="line-text">Pointer Dereference</h2>
+    <p>
+      Given a <a class="rlink" href="pointer.html#definition-pointer"> <code>p : *T</code>, then <code>p.*</code> can do different things, depending on the context it is used in:
+    </p>
+    <ol>
+        <li>Read: <code>p.*</code> yields the value stored at the memory address <code>p</code></li>
+        <li>Write: <code>p.*</code> yields a reference to the underlying memory, allowing you to change what is stored at the memory address <code>p</code></li>
+    </ol>
+</div>
