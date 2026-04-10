@@ -1,14 +1,21 @@
+<div class="definition" id="definition-memory-address">
+    <h2 class="line-text">Memory Address</h2>
+    <p>
+        A memory address is a number that identifies a specific location in memory. Each address corresponds to a byte (or a small group of bytes), and can be used to read or write data stored at that location.
+    </p>
+</div>
+
 <div class="definition" id="definition-pointer">
     <h2 class="line-text">Pointer</h2>
     <p>
-        A pointer is a u64, that holds a memory address. A pointer is usually pointing to a value of a specific type, if it is pointing to a value with type <code>T</code>, then the type of the pointer is <code>*T</code>.
+        A pointer is a <a class="rlink" href="pointer.html#definition-s64">s64</a> that holds a <a class="rlink" href="pointer.html#definition-memory-address">memory address</a>. A pointer is usually pointing to a value of a specific type; if it is pointing to a value with type <code>T</code>, then the type of the pointer is <code>*T</code>.
     </p>
 </div>
 
 <div class="definition" id="definition-pointer-dereference">
     <h2 class="line-text">Pointer Dereference</h2>
     <p>
-      Given a <a class="rlink" href="pointer.html#definition-pointer"> <code>p : *T</code>, then <code>p.*</code> can do different things, depending on the context it is used in:
+        Given a <a class="rlink" href="pointer.html#definition-pointer">pointer</a> <code>p : *T</code>, then <code>p.*</code> can do different things, depending on the context it is used in:
     </p>
     <ol>
         <li>Read: <code>p.*</code> yields the value stored at the memory address <code>p</code></li>
