@@ -8,21 +8,21 @@
 <div class="definition" id="definition-top-level-scope">
     <h2 class="line-text">Top Level Scope</h2>
     <p>
-        The top level <a class="rlink" href="import.html#definition-scope">scope</a> (also called the global scope) is the outermost scope of your program. An identifier created at the top level, outside of any <code>{ ... }</code> block and lives in this scope and is visible to all code within your application.
+        The top level <a class="rlink" href="compilation.html#definition-scope">scope</a> (also called the global scope) is the outermost scope of your program. An identifier created at the top level, outside of any <code>{ ... }</code> block and lives in this scope and is visible to all code within your application.
     </p>
 </div>
 
 <div class="definition" id="definition-file-scope">
     <h2 class="line-text">File Scope</h2>
     <p>
-        Given a Jai file, we say that its <a class="rlink" href="import.html#definition-scope">scope</a> is the collection of identifiers created in the file. A file scope sits underneath the <a class="rlink" href="import.html#definition-top-level-scope">top level scope</a>, meaning code in a file can also see identifiers from the top level scope.
+        Given a Jai file, we say that its <a class="rlink" href="compilation.html#definition-scope">scope</a> is the collection of identifiers created in the file. A file scope sits underneath the <a class="rlink" href="compilation.html#definition-top-level-scope">top level scope</a>, meaning code in a file can also see identifiers from the top level scope.
     </p>
 </div>
 
 <div class="definition" id="definition-scope-file">
     <h2 class="line-text">#scope_file</h2>
     <p>
-        <code>#scope_file</code> is a compile time directive that causes all identifiers declared after it to be private to the current file. These identifiers are placed into the <a class="rlink" href="import.html#definition-file-scope">file scope</a> and are not visible to any other file, not via <code>#load</code>, not via <code>#import</code>, and not to other files within the same module. This is the most restrictive visibility level.
+        <code>#scope_file</code> is a compile time directive that causes all identifiers declared after it to be private to the current file. These identifiers are placed into the <a class="rlink" href="compilation.html#definition-file-scope">file scope</a> and are not visible to any other file, not via <code>#load</code>, not via <code>#import</code>, and not to other files within the same module. This is the most restrictive visibility level.
     </p>
 </div>
 
@@ -36,21 +36,21 @@
 <div class="definition" id="definition-scope-module">
     <h2 class="line-text">#scope_module</h2>
     <p>
-        <code>#scope_module</code> is a compile time directive that causes all identifiers declared after it to be visible across all files within the current module, but <em>not</em> to code that imports the module. In a regular application (not inside an imported module), <code>#scope_module</code> behaves the same as <a class="rlink" href="import.html#definition-scope-export"><code>#scope_export</code></a>, because the application itself is the module.
+        <code>#scope_module</code> is a compile time directive that causes all identifiers declared after it to be visible across all files within the current module, but <em>not</em> to code that imports the module. In a regular application (not inside an imported module), <code>#scope_module</code> behaves the same as <a class="rlink" href="compilation.html#definition-scope-export"><code>#scope_export</code></a>, because the application itself is the module.
     </p>
 </div>
 
 <div class="definition" id="definition-module">
     <h2 class="line-text">Module</h2>
     <p>
-        We say that a Jai file is a module when it is written in a way so that all identifiers are in its <a class="rlink" href="import.html#definition-file-scope">file scope</a>. A module can also be a folder of files, where the entry point is a file called <code>module.jai</code>. Identifiers within a module have three possible visibility levels, controlled by <a class="rlink" href="import.html#definition-scope-export"><code>#scope_export</code></a>, <a class="rlink" href="import.html#definition-scope-module"><code>#scope_module</code></a>, and <a class="rlink" href="import.html#definition-scope-file"><code>#scope_file</code></a>.
+        We say that a Jai file is a module when it is written in a way so that all identifiers are in its <a class="rlink" href="compilation.html#definition-file-scope">file scope</a>. A module can also be a folder of files, where the entry point is a file called <code>module.jai</code>. Identifiers within a module have three possible visibility levels, controlled by <a class="rlink" href="compilation.html#definition-scope-export"><code>#scope_export</code></a>, <a class="rlink" href="compilation.html#definition-scope-module"><code>#scope_module</code></a>, and <a class="rlink" href="compilation.html#definition-scope-file"><code>#scope_file</code></a>.
     </p>
 </div>
 
 <div class="definition" id="definition-import">
     <h2 class="line-text">#import</h2>
     <p>
-        <code>#import "Module_Name";</code> is a compile time directive that searches the <a class="rlink" href="import.html#definition-import-path">import path</a> for the file <code>module_name.jai</code> or <code>module_name/module.jai</code>. Once found, the file is treated as a <a class="rlink" href="import.html#definition-module">module</a>. The module's <a class="rlink" href="import.html#definition-scope-export"><code>#scope_export</code></a> identifiers are made <em>visible</em> to the <a class="rlink" href="import.html#definition-file-scope">file scope</a> that the <code>#import</code> exists in, but they are not added to it, they remain in the module's own scope. Identifiers behind <a class="rlink" href="import.html#definition-scope-module"><code>#scope_module</code></a> or <a class="rlink" href="import.html#definition-scope-file"><code>#scope_file</code></a> are not visible to the importer.
+        <code>#import "Module_Name";</code> is a compile time directive that searches the <a class="rlink" href="compilation.html#definition-import-path">import path</a> for the file <code>module_name.jai</code> or <code>module_name/module.jai</code>. Once found, the file is treated as a <a class="rlink" href="compilation.html#definition-module">module</a>. The module's <a class="rlink" href="compilation.html#definition-scope-export"><code>#scope_export</code></a> identifiers are made <em>visible</em> to the <a class="rlink" href="compilation.html#definition-file-scope">file scope</a> that the <code>#import</code> exists in, but they are not added to it, they remain in the module's own scope. Identifiers behind <a class="rlink" href="compilation.html#definition-scope-module"><code>#scope_module</code></a> or <a class="rlink" href="compilation.html#definition-scope-file"><code>#scope_file</code></a> are not visible to the importer.
     </p>
     <p>
         The syntax <code>Module_Name :: #import "Module_Name";</code> binds the module's scope to the identifier <code>Module_Name</code>. The module's exported identifiers are then accessed through it, e.g. <code>Module_Name.some_identifier</code>.
@@ -60,7 +60,7 @@
 <div class="definition" id="definition-import">
     <h2 class="line-text">#import</h2>
     <p>
-        <code>#import "Module_Name";</code> is a compile time directive that searches the <a class="rlink" href="import.html#definition-import-path">import path</a> for the file <code>module_name.jai</code> or <code>module_name/module.jai</code>. Once found, the file is treated as a <a class="rlink" href="import.html#definition-module">module</a>, and only its <a class="rlink" href="import.html#definition-scope-export"><code>#scope_export</code></a> identifiers are pulled into the <a class="rlink" href="import.html#definition-file-scope">file scope</a> that the <code>#import</code> exists in. Identifiers behind <a class="rlink" href="import.html#definition-scope-module"><code>#scope_module</code></a> or <a class="rlink" href="import.html#definition-scope-file"><code>#scope_file</code></a> are not visible to the importer.
+        <code>#import "Module_Name";</code> is a compile time directive that searches the <a class="rlink" href="compilation.html#definition-import-path">import path</a> for the file <code>module_name.jai</code> or <code>module_name/module.jai</code>. Once found, the file is treated as a <a class="rlink" href="compilation.html#definition-module">module</a>, and only its <a class="rlink" href="compilation.html#definition-scope-export"><code>#scope_export</code></a> identifiers are pulled into the <a class="rlink" href="compilation.html#definition-file-scope">file scope</a> that the <code>#import</code> exists in. Identifiers behind <a class="rlink" href="compilation.html#definition-scope-module"><code>#scope_module</code></a> or <a class="rlink" href="compilation.html#definition-scope-file"><code>#scope_file</code></a> are not visible to the importer.
     </p>
     <p>
         The syntax <code>Module_Name :: #import "Module_Name";</code>, makes any adds any identifier <code>id</code> to the file scope of the <code>#import</code>.
@@ -70,13 +70,13 @@
 <div class="definition" id="definition-import-resolver">
     <h2 class="line-text">Import Resolver</h2>
     <p>
-        The import resolver is the part of the Jai compiler that finds all <a class="rlink" href="import.html#definition-import"><code>#import</code></a> directives, locates the corresponding <a class="rlink" href="import.html#definition-module">modules</a>, and makes their identifiers available to the importing code. It also handles module deduplication, which ensures that if multiple files import the same module, the module is only compiled once and the same identifiers are shared, rather than being redefined each time.
+        The import resolver is the part of the Jai compiler that finds all <a class="rlink" href="compilation.html#definition-import"><code>#import</code></a> directives, locates the corresponding <a class="rlink" href="compilation.html#definition-module">modules</a>, and makes their identifiers available to the importing code. It also handles module deduplication, which ensures that if multiple files import the same module, the module is only compiled once and the same identifiers are shared, rather than being redefined each time.
     </p>
 </div>
 
 <div class="definition" id="definition-load">
     <h2 class="line-text">#load</h2>
     <p>
-        <code>#load "file.jai";</code> is a compile time directive that inserts the contents of the specified file into the current <a class="rlink" href="import.html#definition-file-scope">file scope</a>. Only identifiers under <a class="rlink" href="import.html#definition-scope-export"><code>#scope_export</code></a> in the loaded file are brought into the loading file's scope. Identifiers behind <a class="rlink" href="import.html#definition-scope-file"><code>#scope_file</code></a> remain private to the loaded file. Unlike <a class="rlink" href="import.html#definition-import"><code>#import</code></a>, the loaded file does <em>not</em> get its own isolated scope, it shares the same scope as the file that loaded it and can see (and contribute to) identifiers in the <a class="rlink" href="import.html#definition-top-level-scope">top level scope</a>.
+        <code>#load "file.jai";</code> is a compile time directive that inserts the contents of the specified file into the current <a class="rlink" href="compilation.html#definition-file-scope">file scope</a>. Only identifiers under <a class="rlink" href="compilation.html#definition-scope-export"><code>#scope_export</code></a> in the loaded file are brought into the loading file's scope. Identifiers behind <a class="rlink" href="compilation.html#definition-scope-file"><code>#scope_file</code></a> remain private to the loaded file. Unlike <a class="rlink" href="compilation.html#definition-import"><code>#import</code></a>, the loaded file does <em>not</em> get its own isolated scope, it shares the same scope as the file that loaded it and can see (and contribute to) identifiers in the <a class="rlink" href="compilation.html#definition-top-level-scope">top level scope</a>.
     </p>
 </div>
