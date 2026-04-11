@@ -13,7 +13,7 @@
         When <code>value</code> matches the constant after a <code>case</code>, that case's block of statements is executed, and then control flow jumps past the end of the <code>if</code>. Each case is its own scope, so local variables declared in one case do not conflict with those in another. The bare <code>case;</code> at the end (with no value) is the default: it executes when no other case matches.
     </p>
     <p>
-        Each case expression must be a <strong>compile-time constant</strong>. Runtime variables and function calls are not allowed. A given value may not appear in more than one case.
+        Each case expression must be a <strong><a class="rlink" href="compilation.html#definition-compile-time">compile-time</a> constant</strong>. Runtime variables and function calls are not allowed. A given value may not appear in more than one case.
     </p>
     <p>
         Any type that is representable as a constant and comparable via the built-in <code>==</code> operator can be used, including <a class="rlink" href="enum.html#definition-enum">enums</a>, <code>string</code>, <code>Type</code>, and function pointers. Structs are not supported because the language does not provide a built-in <code>==</code> for structs, and allowing user-defined overloads would prevent the compiler from optimizing and validating the case table.
