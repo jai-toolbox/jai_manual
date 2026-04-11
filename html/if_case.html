@@ -1,0 +1,55 @@
+<div class="definition" id="definition-if-case">
+    <h2 class="line-text">If-Case Statement</h2>
+    <p>
+        An if-case statement is a compact form of checking a single value against multiple possible constant values. It is analogous to a <code>switch</code> statement in C or C++, but each case does <strong>not</strong> fall through by default.
+    </p>
+    <pre><code>if value == {
+    case constant_a; /* statements */
+    case constant_b; /* statements */
+    case constant_c; /* statements */
+    case;            /* default statements */
+}</code></pre>
+    <p>
+        When <code>value</code> matches the constant after a <code>case</code>, that case's block of statements is executed, and then control flow jumps past the end of the <code>if</code>. Each case is its own scope, so local variables declared in one case do not conflict with those in another. The bare <code>case;</code> at the end (with no value) is the default: it executes when no other case matches.
+    </p>
+    <p>
+        Each case expression must be a <strong>compile-time constant</strong>. Runtime variables and function calls are not allowed. A given value may not appear in more than one case.
+    </p>
+    <p>
+        Any type that is representable as a constant and comparable via the built-in <code>==</code> operator can be used, including <a class="rlink" href="enum.html#definition-enum">enums</a>, <code>string</code>, <code>Type</code>, and function pointers. Structs are not supported because the language does not provide a built-in <code>==</code> for structs, and allowing user-defined overloads would prevent the compiler from optimizing and validating the case table.
+    </p>
+</div>
+
+<div class="definition" id="definition-if-case-through">
+    <h2 class="line-text">#through</h2>
+    <p>
+        By default, execution of an <a class="rlink" href="if-case.html#definition-if-case">if-case statement</a> does not fall through from one case to the next. To opt into C-like fall-through behavior, place <code>#through</code> as the last statement in a case block. Execution will then continue into the next case's block.
+    </p>
+    <pre><code>if value == {
+    case constant_a; #through;
+    case constant_b; #through;
+    case constant_c; /* statements executed for a, b, or c */
+
+    case constant_d; #through;
+    case;            /* statements executed for d or any unmatched value */
+}</code></pre>
+    <p>
+        A common use of <code>#through</code> is to group several case values so they all execute the same block of statements.
+    </p>
+</div>
+
+<div class="definition" id="definition-if-case-complete">
+    <h2 class="line-text">#complete</h2>
+    <p>
+        Marking an <a class="rlink" href="if-case.html#definition-if-case">if-case statement</a> with <code>#complete</code> instructs the compiler to verify that every possible value of the <a class="rlink" href="enum.html#definition-enum">enum</a> type appears in a <code>case</code>. If any value is missing, the program fails to compile. This directive only applies to <a class="rlink" href="enum.html#definition-enum">enum</a> types.
+    </p>
+    <pre><code>if #complete value == {
+    case constant_a; /* statements */
+    case constant_b; /* statements */
+    case constant_c; /* statements */
+    case;            /* default statements */
+}</code></pre>
+    <p>
+        This is useful in large programs where adding a new enum value should force all related if-case statements to be updated. A bare <code>case;</code> (default) is still permitted and handles values that are technically possible at runtime due to memory corruption or other bugs, even when all enum members are covered.
+    </p>
+</div>
