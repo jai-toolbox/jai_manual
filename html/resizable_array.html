@@ -1,0 +1,96 @@
+<div class="definition" id="definition-resizable-array">
+    <h2 class="line-text">Resizable Array</h2>
+    <p>
+        A resizable array is a dynamically-sized array that can grow or shrink at <a class="rlink" href="compilation.html#definition-run-time">runtime</a>. The type of a resizable array of elements of type <code>T</code> is written <code>[..] T</code>. It stores three fields: <code>count</code> (the number of elements currently in use), <code>data</code> (a <a class="rlink" href="pointer.html#definition-pointer">pointer</a> to the first element), and <code>allocated</code> (the total number of elements the current allocation can hold before needing to grow). Memory is obtained from whatever allocator is active in the current context, which may or may not be the heap.
+    </p>
+</div>
+
+<pre>
+    <code>
+values: [..] int;
+array_add(*values, 10);
+array_add(*values, 20);
+array_add(*values, 30);
+
+print("count is %\n", values.count);      // 3
+print("allocated is %\n", values.allocated); // >= 3
+    </code>
+</pre>
+
+<h2>Adding Elements</h2>
+
+<p>
+    Use <code>array_add</code> to append elements. If the array's allocated capacity is exceeded, the array automatically grows by allocating a larger block of memory and copying the existing elements.
+</p>
+
+<pre>
+    <code>
+items: [..] string;
+array_add(*items, "alpha");
+array_add(*items, "beta");
+array_add(*items, "gamma");
+    </code>
+</pre>
+
+<h2>Subscripting</h2>
+
+<p>
+    Resizable arrays support subscript access with bounds checking, just like <a class="rlink" href="fixed_array.html#definition-fixed-array">fixed arrays</a> and <a class="rlink" href="array_view.html#definition-array-view">array views</a>:
+</p>
+
+<pre>
+    <code>
+x := values[1];   // Read the second element.
+values[0] = 99;   // Write to the first element.
+    </code>
+</pre>
+
+<h2>Removing Elements</h2>
+
+<p>
+    <code>array_ordered_remove_by_index</code> removes the element at the given index and shifts all subsequent elements down to preserve order. <code>array_unordered_remove_by_index</code> removes the element by swapping it with the last element, which is faster but does not preserve order.
+</p>
+
+<pre>
+    <code>
+values: [..] int;
+array_add(*values, 10);
+array_add(*values, 20);
+array_add(*values, 30);
+
+array_ordered_remove_by_index(*values, 0);
+// values is now [20, 30]
+    </code>
+</pre>
+
+<h2>Freeing Memory</h2>
+
+<p>
+    If resizable array has allocated memory on the heap, you can free them when they are no longer needed:
+</p>
+
+<pre>
+    <code>
+array_free(values);
+    </code>
+</pre>
+
+<h2>Iteration</h2>
+
+<p>
+    Resizable arrays can be iterated with a <a class="rlink" href="for_loop.html#definition-for-loop">for loop</a>:
+</p>
+
+<pre>
+    <code>
+for values {
+    print("index [%] has value %\n", it_index, it);
+}
+    </code>
+</pre>
+
+<h2>Conversion to Array View</h2>
+
+<p>
+    A resizable array can be used anywhere an <a class="rlink" href="array_view.html#definition-array-view">array view</a> is expected. The resulting view has its <code>data</code> pointing at the resizable array's current storage and its <code>count</code> set to the current element count.
+</p>
