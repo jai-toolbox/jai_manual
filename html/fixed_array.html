@@ -1,0 +1,71 @@
+<div class="definition" id="definition-fixed-array">
+    <h2 class="line-text">Fixed Array</h2>
+    <p>
+        A fixed array is a contiguous sequence of elements whose size is known at <a class="rlink" href="compilation.html#definition-compile-time">compile time</a>. The type of a fixed array with <code>N</code> elements of type <code>T</code> is written <code>[N] T</code>. The storage for all elements is part of the variable itself, so a fixed array declared as a local variable lives on the stack, and a fixed array inside a <a class="rlink" href="struct.html">struct</a> is stored inline within that struct.
+    </p>
+</div>
+
+<pre>
+    <code>
+values: [4] int;            // Four ints, all initialized to 0.
+values[0] = 10;
+values[1] = 20;
+values[2] = 30;
+values[3] = 40;
+    </code>
+</pre>
+
+<h2>Literal Initialization</h2>
+
+<pre>
+    <code>
+values: [4] int = .[10, 20, 30, 40];
+    </code>
+</pre>
+
+<h2>Subscripting</h2>
+
+<p>
+    Fixed arrays support subscript access with bounds checking. The index must be in the range <code>0</code> to <code>N - 1</code>. Accessing an index outside this range produces a runtime error.
+</p>
+
+<pre>
+    <code>
+x := values[2];   // Read the third element.
+values[2] = 99;   // Write to the third element.
+    </code>
+</pre>
+
+<h2>Count and Data</h2>
+
+<p>
+    A fixed array has a <code>.count</code> field that returns the number of elements (which is always the compile-time constant <code>N</code>) and a <code>.data</code> field that returns a <a class="rlink" href="pointer.html#definition-pointer">pointer</a> to the first element.
+</p>
+
+<pre>
+    <code>
+values: [4] int = .[10, 20, 30, 40];
+print("count is %\n", values.count);  // 4
+print("data is %\n", values.data);    // pointer to values[0]
+    </code>
+</pre>
+
+<h2>Iteration</h2>
+
+<p>
+    Fixed arrays can be iterated with a <a class="rlink" href="for_loop.html#definition-for-loop">for loop</a>:
+</p>
+
+<pre>
+    <code>
+for values {
+    print("index [%] has value %\n", it_index, it);
+}
+    </code>
+</pre>
+
+<h2>Conversion to Array View</h2>
+
+<p>
+    A fixed array can be used anywhere an <a class="rlink" href="array_view.html#definition-array-view">array view</a> is expected. The resulting view has its <code>data</code> pointing at the fixed array's storage and its <code>count</code> set to <code>N</code>.
+</p>
