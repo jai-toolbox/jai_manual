@@ -1,0 +1,66 @@
+<div class="definition" id="definition-array-view">
+    <h2 class="line-text">Array View</h2>
+    <p>
+        An array view (also called a slice) is a lightweight descriptor that refers to a contiguous sequence of elements stored elsewhere in <a class="rlink" href="pointer.html#definition-computer-memory">memory</a>. It contains two fields: <code>count</code>, the number of elements, and <code>data</code>, a <a class="rlink" href="pointer.html#definition-pointer">pointer</a> to the first element. The type of an array view over elements of type <code>T</code> is written <code>[] T</code>.
+    </p>
+</div>
+
+<p>
+    An array view does not own the memory it points to. It is simply a window into data that lives somewhere else, whether that is a <a class="rlink" href="fixed_array.html">fixed array</a>, a <a class="rlink" href="resizable_array.html">resizable array</a>, or any other contiguous block of memory. Assigning one array view to another copies only the <code>data</code> pointer and <code>count</code>, never the underlying elements.
+</p>
+
+<pre>
+    <code>
+values: [4] int = .[10, 20, 30, 40];
+
+view: [] int;
+view.data  = values.data;
+view.count = values.count;
+
+print("view[0] is %\n", view[0]);  // 10
+print("view.count is %\n", view.count);  // 4
+    </code>
+</pre>
+
+<h2>Subscripting</h2>
+
+<p>
+    Array views support subscript access with bounds checking. Accessing an index outside the range <code>0</code> to <code>count - 1</code> produces a runtime error.
+</p>
+
+<pre>
+    <code>
+view: [] int = ...;
+x := view[2];  // Read the third element.
+    </code>
+</pre>
+
+<h2>Taking Sub-Views</h2>
+
+<p>
+    Because an array view is just a pointer and a count, you can create a sub-view of any contiguous range by adjusting <code>data</code> and <code>count</code> directly, without allocating or copying:
+</p>
+
+<pre>
+    <code>
+values: [5] int = .[10, 20, 30, 40, 50];
+view: [] int;
+view.data  = values.data + 1;
+view.count = 3;
+// view now refers to [20, 30, 40]
+    </code>
+</pre>
+
+<h2>Iteration</h2>
+
+<p>
+    Array views can be iterated with a <a class="rlink" href="for_loop.html#definition-for-loop">for loop</a>, just like arrays:
+</p>
+
+<pre>
+    <code>
+for view {
+    print("index [%] has value %\n", it_index, it);
+}
+    </code>
+</pre>
