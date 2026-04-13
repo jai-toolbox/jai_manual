@@ -1,23 +1,320 @@
 <h2>using a value</h2>
 
+<p>
+    The most basic use of <code>using</code> is to bring the fields of a <a class="rlink" href="struct.html#definition-struct">struct</a> variable into the current <a class="rlink" href="compilation.html#definition-scope">scope</a>. After <code>using</code>, you can refer to the struct's fields as if they were local variables:
+</p>
+
+<pre>
+    <code>
+Ice_Cream :: struct {
+    temperature   := -10.0;
+    flavor        := "vanilla";
+    num_scoops    := 2;
+    cone_style    := "waffle";
+    add_sprinkles := false;
+}
+
+cream: Ice_Cream;
+using cream;
+
+num_scoops = 5;                       // Same as cream.num_scoops = 5
+flavor = "peppermint";                // Same as cream.flavor = "peppermint"
+    </code>
+</pre>
+
+<p>
+    Both the short form and the explicit dereference form refer to the same underlying data:
+</p>
+
+<pre>
+    <code>
+cream.temperature = -20;
+temperature = -30;                    // Overwrites the value set on the line above.
+print("%\n", cream.temperature);     // -30
+print("%\n", temperature);           // -30
+    </code>
+</pre>
+
+<p>
+    A common pattern is to scope the <code>using</code> inside a block so the imported names do not leak into the surrounding code:
+</p>
+
+<pre>
+    <code>
+other: Ice_Cream;
+{
+    using other;
+    temperature = 20;
+    flavor      = "cinnamon";
+    num_scoops  = 37;
+}
+// temperature, flavor, etc. are no longer in scope here.
+    </code>
+</pre>
+
+<p>
+    You can also put the <code>using</code> directly on the declaration:
+</p>
+
+<pre>
+    <code>
+using cream: Ice_Cream;
+print("flavor is %, % scoops.\n", flavor, num_scoops);
+    </code>
+</pre>
+
+<p>
+    <code>using</code> also works with enum declarations, bringing the enum's values into the current scope:
+</p>
+
+<pre>
+    <code>
+Fruits :: enum {
+    BANANA;
+    APPLE;
+    WATERMELON;
+}
+
+using Fruits;
+x := BANANA;       // Same as Fruits.BANANA
+    </code>
+</pre>
+
 <h2>using a pointer</h2>
+
+<p>
+    <code>using</code> works on <a class="rlink" href="pointer.html#definition-pointer">pointers</a> to structs just as it does on values. The fields are accessed through the pointer transparently:
+</p>
+
+<pre>
+    <code>
+make_ice_cream :: () -> *Ice_Cream {
+    result := New(Ice_Cream);
+    return result;
+}
+
+using cream := make_ice_cream();
+print("type_of(cream) is %\n", type_of(cream));  // *Ice_Cream
+
+num_scoops *= 2;
+num_scoops += 1;
+print("scoops: %\n", num_scoops);
+    </code>
+</pre>
 
 <h2>using an import</h2>
 
+<p>
+    When you bind an <a class="rlink" href="compilation.html#definition-import"><code>#import</code></a> to a name, the module's exported identifiers are accessed through that name. You can apply <code>using</code> to make those identifiers available directly:
+</p>
+
+<pre>
+    <code>
+// 'using' on the declaration itself:
+using Random :: #import "Random";
+
+// Or bind first, then 'using' separately:
+Hash_Table :: #import "Hash_Table";
+using Hash_Table;
+
+// Bind without 'using':
+Crc :: #import "Crc";
+    </code>
+</pre>
+
+<p>
+    With the imports above, you can refer to identifiers from <code>Random</code> and <code>Hash_Table</code> with or without the module prefix. For <code>Crc</code>, because we did not apply <code>using</code> in the global scope, you must always write <code>Crc.some_identifier</code>:
+</p>
+
+<pre>
+    <code>
+a := Random.random_get();   // Explicit dereference.
+b := random_get();           // Also works, because we used 'using'.
+
+result := Crc.crc64("Hello, Sailor!");   // Must use prefix.
+// result := crc64("Hello, Sailor!");     // Error: crc64 is not in scope here.
+    </code>
+</pre>
+
+<p>
+    You can also <code>using</code> a named import inside a procedure to limit how far the names spread:
+</p>
+
+<pre>
+    <code>
+do_stuff :: () {
+    using Crc;
+    result := crc64("Hello");   // Works inside this procedure.
+}
+
+// crc64 is not available out here.
+    </code>
+</pre>
+
 <h2>using in a procedure</h2>
+
+<p>
+    You can put <code>using</code> on a procedure parameter, which brings the struct's fields into the procedure body. This gives a style similar to methods in object-oriented languages, where the procedure feels devoted to manipulating one particular data structure:
+</p>
+
+<pre>
+    <code>
+make_much_better :: (using cream: *Ice_Cream) {
+    num_scoops *= 3;                          // Same as cream.num_scoops *= 3
+    add_sprinkles = true;
+    flavor = sprint("% with cinnamon", flavor);
+}
+
+cream: Ice_Cream;
+make_much_better(*cream);
+print("cream is: %\n", cream);
+    </code>
+</pre>
 
 <h2>using in a struct</h2>
 
 <p>
-    To do using in a struct it must be of the form <code>using var_name : Type;</code>, <code>using #as var_name : Type;</code>, <code>using,except(var_name_1, ..., var_name_n) #as var_name : Type;</code>, <code>using,except(var_name_1, ..., var_name_n) #as var_name : Type;</code>, <code>using,only(var_name_1, ..., var_name_n) #as var_name : Type;</code>
+    Inside a <a class="rlink" href="struct.html#definition-struct">struct</a> declaration, <code>using</code> on a field promotes that field's members into the parent struct's <a class="rlink" href="namespace.html#definition-namespace">namespace</a>. This allows you to access the inner struct's fields directly through the outer struct:
 </p>
 
-<h2>dealing with name collisions</h2>
+<pre>
+    <code>
+Vector3 :: struct {
+    x, y, z: float;
+}
+
+Entity :: struct {
+    using position: Vector3;
+    id: s64;
+}
+
+Dog :: struct {
+    using entity: Entity;
+    name: string;
+    weight_in_pounds: float;
+}
+
+dog: Dog;
+dog.id = 1337;             // Same as dog.entity.id
+dog.x = 3;                 // Same as dog.entity.position.x
+dog.y = 9;                 // Same as dog.entity.position.y
+    </code>
+</pre>
 
 <p>
-    If you just want to not include a certain field name you can do <code>using,except(length) position: Your_Type_With_Length</code>. Alternatively we can import only what we request by doing <code>using,only(blah) foo : Type</code>
+    The <code>using</code> is multi-level: <code>Dog</code> uses <code>Entity</code>, and <code>Entity</code> uses <code>Vector3</code>, so <code>x</code>, <code>y</code>, and <code>z</code> are all accessible directly from a <code>Dog</code>. All of the following refer to the same data:
 </p>
 
+<pre>
+    <code>
+print("%\n", dog.position);                    // The Vector3
+print("%\n", dog.entity.position);             // Same thing
+print("%, %, %\n", dog.x, dog.y, dog.z);      // Same fields, accessed directly
+    </code>
+</pre>
+
 <p>
-    Suppose that there is a field that represents the same thing. So in your setup you have a field called position, and then someone else made a type that holds this information as translation, you want to do "using" but then you have two fields representing the same thing which wshould be synchronized. To do this we can do <code>using,map(proc)</code> here proc is a function that takes in the names, and then TODO idk where I was going with this but my goal was to somehow do a compile time #place translation : position or something like that so they refer to the same thing.
+    The accepted forms for <code>using</code> in a struct are:
 </p>
+
+<ul>
+    <li><code>using var_name : Type;</code></li>
+    <li><code>using #as var_name : Type;</code></li>
+    <li><code>using,except(name_1, ..., name_n) var_name : Type;</code></li>
+    <li><code>using,only(name_1, ..., name_n) var_name : Type;</code></li>
+</ul>
+
+<p>
+    This pattern provides composition-based reuse similar to inheritance in object-oriented languages. If you are familiar with subclassing, <code>using</code> in a struct gives you the ability to access a "parent" struct's fields directly, without requiring a class hierarchy. This can be combined with <code>#as</code> to also allow implicit casting from the outer type to the inner type:
+</p>
+
+<pre>
+    <code>
+Person :: struct {
+    name: string;
+}
+
+Employee :: struct {
+    using #as p: Person;
+    profession: string;
+}
+
+emp: Employee;
+emp.name = "Gates";
+
+p: Person;
+p = emp;    // Implicit cast from Employee to Person, enabled by #as.
+print("%\n", p);  // {"Gates"}
+    </code>
+</pre>
+
+<p>
+    Without <code>#as</code>, the implicit cast is not allowed:
+</p>
+
+<pre>
+    <code>
+Patient :: struct {
+    using pe: Person;    // No #as
+    disease: string;
+}
+
+pat: Patient;
+pat.name = "Johnson";   // Field access works fine.
+
+p: Person;
+// p = pat;             // Error: Type mismatch. #as is required for this cast.
+    </code>
+</pre>
+
+<h2 id="dealing-with-name-collisions">Dealing with Name Collisions</h2>
+
+<p>
+    If you try to <code>using</code> two things that have fields with the same name, you get a compile-time error for the redeclared identifier:
+</p>
+
+<pre>
+    <code>
+Soda :: struct {
+    flavor := "Root Beer";
+}
+
+using cream: Ice_Cream;
+// using soda: Soda;        // Error: 'flavor' is already declared (from cream).
+    </code>
+</pre>
+
+<p>
+    The same error occurs if you <code>using</code> two instances of the same type:
+</p>
+
+<pre>
+    <code>
+// using other: Ice_Cream;  // Error: all field names collide with cream.
+    </code>
+</pre>
+
+<h3>using,except</h3>
+
+<p>
+    If you want to exclude specific field names from being imported, use the <code>except</code> modifier. The excluded fields are still accessible through explicit dereference, they just are not promoted:
+</p>
+
+<pre>
+    <code>
+using,except(flavor) soda: Soda;   // Everything except 'flavor' is imported.
+// flavor still accessible as soda.flavor
+    </code>
+</pre>
+
+<h3>using,only</h3>
+
+<p>
+    The opposite of <code>except</code>: only the listed names are imported:
+</p>
+
+<pre>
+    <code>
+using,only(w, y) orientation: Quaternion;   // Only w and y are promoted.
+    </code>
+</pre>
