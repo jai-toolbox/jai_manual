@@ -1,0 +1,217 @@
+<div class="definition" id="definition-string">
+    <h2 class="line-text">String</h2>
+    <p>
+        A <code>string</code> in Jai is the type <a class="rlink" href="array_view.html#definition-array-view"><code>[]</code></a> <a class="rlink" href="types.html#definition-u8"><code>u8</code></a>
+    </p>
+</div>
+
+
+<p>
+    Because a string is just a view, assigning one string to another does <strong>not</strong> copy the underlying bytes. It only copies the <code>data</code> pointer and <code>count</code>. This means string assignment is always cheap.
+</p>
+
+<pre>
+    <code>
+x: string;
+x = "Hello";    // x.data points at "Hello", x.count is 5
+x = "Sailor";   // x.data now points at "Sailor", x.count is 6
+                 // No memory was copied in either assignment.
+    </code>
+</pre>
+
+<h2>Subscripting and Manipulation</h2>
+
+<p>
+    Strings can be subscripted just like array views. The result is a <a class="rlink" href="types.html#definition-u8">u8</a>, that is, a number, not some special character type. There is no dedicated character type in Jai.
+</p>
+
+<pre>
+    <code>
+x := "Sailor";
+print("x[0] is: %\n", x[0]);  // prints 83, the byte value of 'S'
+    </code>
+</pre>
+
+<p>
+    Strings are bounds-checked at runtime. Accessing an index outside the range <code>0</code> to <code>count - 1</code> will produce a runtime error.
+</p>
+
+<p>
+    Because a string is a view, you can take substrings without allocating or copying data. You just manipulate <code>count</code> and <code>data</code> directly:
+</p>
+
+<pre>
+    <code>
+x := "Sailor";
+x.count = 4;
+print("x is: '%'\n", x);    // "Sail"
+
+x.count -= 1;
+x.data  += 1;
+print("x is: '%'\n", x);    // "ail"
+    </code>
+</pre>
+
+<h2>Strings Are Not Zero-Terminated</h2>
+
+<p>
+    Unlike C, strings in Jai are <strong>not</strong> zero-terminated. The length is always known from <code>count</code>, and taking substrings does not require allocating new memory or appending a null byte. This is one of the primary advantages of the array view representation.
+</p>
+
+<p>
+    However, the compiler does place a zero byte after every string <strong>literal</strong> in the binary. This means that if you have a compile-time constant string, you can safely pass its <code>.data</code> pointer to a C function that expects a zero-terminated <code>*u8</code>. The compiler also allows string constants to implicitly cast to <code>*u8</code> for this reason.
+</p>
+
+<pre>
+    <code>
+// Suppose we have a C-style function:
+strlen :: (s: *u8) -> s64 #foreign crt;
+
+// String constants implicitly cast to *u8:
+len := strlen("Hello");  // This works, "Hello" is zero-terminated.
+
+// But a non-constant string will NOT implicitly cast to *u8:
+x := "Hello";
+// len = strlen(x);  // Compile-time error!
+
+// If you need to pass a non-constant string to C, you must
+// either copy it and add a zero, or use a helper like to_c_string.
+    </code>
+</pre>
+
+<h2>Encoding</h2>
+
+<p>
+    Jai does not enforce any particular encoding on strings. Each element is a <a class="rlink" href="types.html#definition-u8">u8</a>, and the language assumes that most programs will use UTF-8 most of the time. In UTF-8, the common English alphabet and punctuation fit in a single byte, while other characters use multiple bytes of varying width. This means you cannot assume that <code>count</code> equals the number of visible characters, only the number of bytes.
+</p>
+
+<p>
+    The default <code>for</code> loop iterates one byte at a time. If you need to iterate one UTF-8 character at a time, you can use an iterator from the <code>Unicode</code> module:
+</p>
+
+<pre>
+    <code>
+#import "Unicode";
+
+LYRICS :: "しかし、魚の質を考えれば";
+for :utf8_iter LYRICS {
+    print("index [%] has utf8 value %\n", it_index, it);
+}
+    </code>
+</pre>
+
+<h2>Building Strings Dynamically</h2>
+
+<p>
+    Because a <code>string</code> is just a view, it does not provide any method for concatenation or growing. If you see a string being assigned, you know that nothing expensive is happening. To build strings dynamically, Jai provides two main approaches.
+</p>
+
+<h3>sprint</h3>
+
+<p>
+    <code>sprint</code> works just like <code>print</code>, but instead of writing to the console, it allocates and returns a new string with the formatted result:
+</p>
+
+<pre>
+    <code>
+n := 69105;
+message := "For sure!!";
+s := sprint("There are % leaves in the pile. %", n, message);
+print("s is: '%'\n", s);
+    </code>
+</pre>
+
+<p>
+  If your string doesn't need to exist for a long time, then consider using <code>tprint</code> to make a string allocated on temporary storage rather than the heap.
+</p>
+
+<h3>String_Builder</h3>
+
+<p>
+    For heavier-duty tasks, such as building a string incrementally from many pieces, use <code>String_Builder</code>. It provides a buffered way of accumulating string data, and you extract the final result when you are done:
+</p>
+
+<pre>
+    <code>
+builder: String_Builder;
+init_string_builder(*builder);
+
+append(*builder, "One!");
+append(*builder, "Two!");
+append(*builder, "Three!");
+
+// You can also use formatted output:
+print_to_builder(*builder, " ... number %, exclamation %.", 42, "wow");
+
+result := builder_to_string(*builder);
+print("result is: '%'\n", result);
+    </code>
+</pre>
+
+<p>
+    This is the idiomatic way to concatenate strings in Jai. Instead of writing <code>a + b</code> as you might in other languages, you append both strings to a builder and then extract the result. This makes the allocation explicit and predictable.
+</p>
+
+<h2>Escape Sequences</h2>
+
+<p>
+    Inside a regular string literal, the backslash character introduces an escape sequence:
+</p>
+
+<table>
+    <tr><th>Sequence</th><th>Meaning</th></tr>
+    <tr><td><code>\e</code></td><td>Escape</td></tr>
+    <tr><td><code>\n</code></td><td>Newline</td></tr>
+    <tr><td><code>\r</code></td><td>Carriage Return</td></tr>
+    <tr><td><code>\t</code></td><td>Tab</td></tr>
+    <tr><td><code>\"</code></td><td>The character <code>"</code></td></tr>
+    <tr><td><code>\\</code></td><td>The character <code>\</code></td></tr>
+    <tr><td><code>\0</code></td><td>The byte with value 0</td></tr>
+    <tr><td><code>\xAB</code></td><td>The byte with hexadecimal value AB</td></tr>
+    <tr><td><code>\d123</code></td><td>The byte with decimal value 123 (max 255)</td></tr>
+    <tr><td><code>\uABCD</code></td><td>The 16-bit Unicode character U+ABCD, encoded as UTF-8</td></tr>
+    <tr><td><code>\UABCDEF12</code></td><td>The 32-bit Unicode character U+ABCDEF12, encoded as UTF-8</td></tr>
+</table>
+
+<h2>Here Strings</h2>
+
+<p>
+    When a string contains many backslashes or quotes, escape sequences become difficult to read. Jai provides <code>#string</code> for this situation. You write <code>#string</code> followed by a delimiter identifier, then all text on subsequent lines is included verbatim in the string until a line starting with the delimiter is encountered:
+</p>
+
+<pre>
+    <code>
+MY_STRING :: #string DONE
+This string has "quotes" and \backslashes\ with no escaping needed.
+It can span multiple lines.
+DONE
+    </code>
+</pre>
+
+<p>
+    The contents are completely verbatim, including leading whitespace. Line endings are normalized to <code>\n</code> regardless of your source file's line ending style. If you want <code>\r\n</code> line endings instead, use <code>#string,cr</code>.
+</p>
+
+<p>
+    Note that a <code>#string</code> always includes a trailing newline (from the last line before the delimiter). If you need to remove it, you can do so in code:
+</p>
+
+<pre>
+    <code>
+s := MY_STRING;
+s.count -= 1;  // Remove trailing newline.
+    </code>
+</pre>
+
+<h2>Type Information</h2>
+
+<pre>
+    <code>
+x := "Hello";
+print("type_of(x)          is: %\n", type_of(x));          // string
+print("size_of(type_of(x)) is: %\n", size_of(type_of(x))); // 16 (8 for count + 8 for data pointer)
+print("type_of(x[0])       is: %\n", type_of(x[0]));       // u8
+print("type_of(x.count)    is: %\n", type_of(x.count));     // s64
+print("type_of(x.data)     is: %\n", type_of(x.data));      // *u8
+    </code>
+</pre>
