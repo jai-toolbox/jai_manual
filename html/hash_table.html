@@ -5,10 +5,6 @@
     </p>
 </div>
 
-<p>
-  Note: We will not go over all the details, but a simple high level usage here. For the details go read the code for it.
-</p>
-
 <pre>
     <code>
 #import "Hash_Table";
@@ -102,6 +98,19 @@ if newly_added  entry.* = 75;
     <code>
 for scores {
     print("% has score %\n", it_index, it);
+}
+    </code>
+</pre>
+
+<p>
+    You can rename <code>it</code> using the standard <a class="rlink" href="for_loop.html#definition-for-loop">named iterator</a> syntax, but <code>it_index</code> cannot be renamed directly. If you want both the key and value under custom names, assign them inside the loop body:
+</p>
+
+<pre>
+    <code>
+for scores {
+    key, value := it_index, it;
+    print("% has score %\n", key, value);
 }
     </code>
 </pre>
