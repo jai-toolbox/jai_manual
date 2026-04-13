@@ -1,0 +1,53 @@
+<div class="definition" id="definition-union">
+    <h2 class="line-text">Union</h2>
+    <p>
+        A union is a type where all members share the same <a class="rlink" href="pointer.html#definition-computer-memory">memory</a> location. The size of a union is the size of its largest member. Writing to one member overwrites the data of all other members.
+    </p>
+</div>
+
+<pre>
+    <code>
+Value :: union {
+    as_int:   s64;
+    as_float: float64;
+    as_bytes: [8] u8;
+}
+    </code>
+</pre>
+
+<p>
+    In this example, <code>as_int</code>, <code>as_float</code>, and <code>as_bytes</code> all occupy the same 8 bytes of memory. Assigning a value to <code>as_int</code> and then reading <code>as_bytes</code> lets you inspect the raw byte representation of that integer.
+</p>
+
+<pre>
+    <code>
+v: Value;
+v.as_int = 42;
+print("first byte is %\n", v.as_bytes[0]);
+    </code>
+</pre>
+
+<p>
+    Unions are useful when a piece of data can be interpreted in multiple ways, or when you need to reinterpret the bit pattern of one type as another. They are also used in combination with an <a class="rlink" href="if_case.html#definition-if-case">enum tag</a> to build tagged unions, where the enum tracks which member is currently valid.
+</p>
+
+<pre>
+    <code>
+Token_Kind :: enum {
+    INTEGER;
+    FLOAT;
+    IDENTIFIER;
+}
+
+Token_Value :: union {
+    as_int:    s64;
+    as_float:  float64;
+    as_string: string;
+}
+
+Token :: struct {
+    kind:  Token_Kind;
+    value: Token_Value;
+}
+    </code>
+</pre>
