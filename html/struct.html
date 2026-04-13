@@ -1,16 +1,297 @@
-
-<p>
-</p>
+<div class="definition" id="definition-struct">
+    <h2 class="line-text">Struct</h2>
+    <p>
+        A struct is a compound data type that groups multiple named fields together into a single unit. Each field has a name and a type. The fields are stored in <a class="rlink" href="pointer.html#definition-computer-memory">memory</a> in the order they are declared, and this order is guaranteed by the language. The conceptual layout and the physical layout are always the same.
+    </p>
+</div>
 
 <pre>
     <code>
-Struct_Name :: struct {
+Person :: struct {
     name:         string;
-    address:      Address;
-    phone_number: Phone_Number;
     year_born:    int;
     month_born:   int;
     day_born:     int;
 }
+    </code>
+</pre>
+
+<p>
+    Structs help you organize your program by grouping related pieces of data together. Instead of passing around many loose variables, you pass a single struct. You can write procedures that take a struct as an argument, assign one struct to another, and print an entire struct with <code>print</code>.
+</p>
+
+<h2>Declaring and Using Structs</h2>
+
+<pre>
+    <code>
+Rectangle :: struct {
+    x0: float;
+    y0: float;
+    x1: float;
+    y1: float;
+    color_name: string;
+}
+
+r: Rectangle;          // All members initialized to their default values (0, "").
+r.x0 = 10;
+r.y0 = 5;
+r.x1 = 50;
+r.y1 = 55;
+r.color_name = "chartreuse";
+
+print("r is: %\n", r);
+    </code>
+</pre>
+
+<h2>Compound Declarations</h2>
+
+<p>
+    Multiple fields of the same type can be declared on a single line:
+</p>
+
+<pre>
+    <code>
+Vector3 :: struct {
+    x, y, z: float;
+}
+    </code>
+</pre>
+
+<h2>Default Values</h2>
+
+<p>
+    Struct fields can have default values, using the same declaration syntax you would use for local variables:
+</p>
+
+<pre>
+    <code>
+Ice_Cream_Info :: struct {
+    temperature   := -10.0;
+    flavor        := "vanilla";
+    num_scoops    := 2;
+    cone_style    := "waffle";
+    add_sprinkles := false;
+}
+
+serving: Ice_Cream_Info;  // Gets all the defaults.
+print("serving is: %\n", serving);
+    </code>
+</pre>
+
+<p>
+    You can also override default values of sub-struct fields or array elements inside a struct declaration:
+</p>
+
+<pre>
+    <code>
+Ice_Cream_Store_Display :: struct {
+    brightness: float;
+
+    info: Ice_Cream_Info;
+    info.flavor = "chocolate";  // Override just the flavor, keep other defaults.
+
+    position: Vector3;
+    position.z = 1.5;          // Raise up the display in Z.
+
+    brightness = 101.2;
+}
+    </code>
+</pre>
+
+<h2>Nested Structs</h2>
+
+<p>
+    Structs can contain other structs as fields:
+</p>
+
+<pre>
+    <code>
+Line_Segment :: struct {
+    start: Vector3;
+    end:   Vector3;
+    color: string;
+}
+    </code>
+</pre>
+
+<h2>Assignment and Copying</h2>
+
+<p>
+    Assigning one struct to another copies the data directly, byte for byte. There are no constructors, no deep copies, and no hidden behavior. If the struct contains <a class="rlink" href="pointer.html#definition-pointer">pointers</a> or <a class="rlink" href="string.html#definition-string">strings</a>, only the pointer values are copied, not the data they point to.
+</p>
+
+<pre>
+    <code>
+s := r;  // A simple memory copy of r into s.
+print("s is: %\n", s);
+    </code>
+</pre>
+
+<h2>Size and Layout</h2>
+
+<p>
+    The size of a struct, measured in bytes, includes storage for all its fields plus any padding required for alignment. You can query the size with <code>size_of</code>:
+</p>
+
+<pre>
+    <code>
+print("size_of(Rectangle) = %\n", size_of(Rectangle));
+
+// size_of takes a Type, not a value. If you have a value, use type_of:
+print("size_of(type_of(r)) = %\n", size_of(type_of(r)));
+    </code>
+</pre>
+
+<p>
+    The address-of operator <code>*</code> gives you the <a class="rlink" href="pointer.html#definition-memory-address">memory address</a> of a value. For a struct, <code>*r</code> is the address where the struct begins, and <code>*r.x0</code> is the address of the first field:
+</p>
+
+<pre>
+    <code>
+print("The base of r is %\n", *r);
+print("The address of r.x0 is %\n", *r.x0);  // Same as *r, since x0 is the first field.
+print("The address of r.x1 is %\n", *r.x1);
+    </code>
+</pre>
+
+<h2>Struct Literals</h2>
+
+<p>
+    You can write struct values directly in your code using struct literals. There are two styles: named and positional.
+</p>
+
+<h3>Named Struct Literals</h3>
+
+<p>
+    You specify which fields to set by name. Any field you do not mention gets its default value:
+</p>
+
+<pre>
+    <code>
+order := Ice_Cream_Info.{flavor = "chocolate", num_scoops = 3};
+print("order is: %\n", order);
+    </code>
+</pre>
+
+<p>
+    When the type can be inferred from context, you can omit the type name on the left:
+</p>
+
+<pre>
+    <code>
+order2: Ice_Cream_Info;
+order2 = .{flavor = "strawberry", num_scoops = 1};
+
+// Works in procedure calls too:
+check_temperature :: (info: Ice_Cream_Info) { /* ... */ }
+check_temperature(.{num_scoops = 4, add_sprinkles = true});
+
+// And in return statements:
+parse_order :: (s: string) -> (bool, Ice_Cream_Info) {
+    if s == "special" return true, .{flavor = "neapolitan", num_scoops = 17};
+    return false, .{};  // .{} gives the default.
+}
+    </code>
+</pre>
+
+<p>
+    Named struct literals also support assigning sub-struct fields and array elements:
+</p>
+
+<pre>
+    <code>
+Body :: struct {
+    using header: Header;
+    values: [3] int;
+    postscript := "Bye.";
+}
+
+body := Body.{name = "Ginger", values[1] = 7};
+    </code>
+</pre>
+
+<h3>Positional Struct Literals</h3>
+
+<p>
+    For structs with few fields, you can list values in order without names. You must provide a value for every settable field:
+</p>
+
+<pre>
+    <code>
+a := Vector3.{1, 2, 3};
+b: Vector3 = .{0, 0, 1};
+    </code>
+</pre>
+
+<p>
+    Providing fewer values than there are fields is a compile-time error. This prevents a common class of bugs where a new field is added to a struct but existing literals are not updated. If you want to set only some fields, use the named style instead.
+</p>
+
+<h3>When the Type Must Be Explicit</h3>
+
+<p>
+    In some situations, the compiler cannot infer the struct type, for example when passing a literal to a polymorphic procedure. In these cases you must write the type explicitly:
+</p>
+
+<pre>
+    <code>
+check :: (s: $T) { /* ... */ }
+
+// check(.{num_scoops = 4});                        // Error: type unknown.
+check(Ice_Cream_Info.{num_scoops = 4});              // Works.
+    </code>
+</pre>
+
+<h3>Constant Struct Literals</h3>
+
+<p>
+    If all the values in a struct literal are <a class="rlink" href="compilation.html#definition-compile-time">compile-time</a> constants, the literal itself is considered constant. This can be verified with <code>is_constant</code>:
+</p>
+
+<pre>
+    <code>
+R22 :: 0.7071068;
+
+result_1 := is_constant(Vector3.{R22, R22, 0});         // true: all values are constants.
+result_2 := is_constant(Vector3.{1 - R22*R22, 0, 0});   // true: math between constants is constant.
+    </code>
+</pre>
+
+<h2>Using with Structs</h2>
+
+<p>
+    The <code>using</code> keyword brings a struct's fields into the current <a class="rlink" href="compilation.html#definition-scope">scope</a>, allowing you to refer to them without the struct prefix. See <a class="rlink" href="using.html">using</a> for full details.
+</p>
+
+<pre>
+    <code>
+{
+    using display;
+
+    brightness = 375.4;         // Same as display.brightness = 375.4
+    info.flavor = "strawberry"; // Same as display.info.flavor = "strawberry"
+    position.x = 1;
+
+    using position;
+    x += 1;  // Same as display.position.x += 1
+    y = -3;
+    z *= 4;
+}
+    </code>
+</pre>
+
+<p>
+    If two <code>using</code> statements bring fields with the same name into scope, it is a compile-time error. See <a class="rlink" href="using.html#dealing-with-name-collisions">dealing with name collisions</a> for strategies to resolve this.
+</p>
+
+<h2>Uninitialized Values</h2>
+
+<p>
+    By default, all struct fields are initialized (either to explicit defaults or to zero). If you want to skip initialization for performance reasons, you can use <code>---</code>:
+</p>
+
+<pre>
+    <code>
+r: Vector3 = ---;  // r's fields contain whatever was in memory. No initialization.
     </code>
 </pre>
