@@ -1,0 +1,136 @@
+<div class="definition" id="definition-hash-table">
+    <h2 class="line-text">Hash Table</h2>
+    <p>
+        A hash table is a data structure that maps keys to values. It works by feeding each key through a hash function to produce an integer, which is then used to compute an index into an internal array of slots, allowing lookups, insertions, and removals in approximately constant time. The type of a hash table mapping keys of type <code>K</code> to values of type <code>V</code> is written <code>Table(K, V)</code>, and lives in the <code>"Hash_Table"</code> <a class="rlink" href="compilation.html#definition-module">module</a>.
+    </p>
+</div>
+
+<p>
+  Note: We will not go over all the details, but a simple high level usage here. For the details go read the code for it.
+</p>
+
+<pre>
+    <code>
+#import "Hash_Table";
+
+scores: Table(string, int);
+table_add(*scores, "Alice", 95);
+table_add(*scores, "Bob",   82);
+
+value, success := table_find(*scores, "Alice");
+if success  print("Alice's score is %\n", value);  // 95
+    </code>
+</pre>
+
+<h2>Adding and Setting Entries</h2>
+
+<p>
+    Use <code>table_add</code> to insert a key-value pair. It returns a <a class="rlink" href="pointer.html#definition-pointer">pointer</a> to the inserted value. If you add the same key twice, both entries will exist and lookups will return the first match. Use <code>table_set</code> instead if you want at most one entry per key; it replaces the value if the key already exists.
+</p>
+
+<pre>
+    <code>
+table_add(*scores, "Carol", 91);       // Always inserts a new entry.
+table_set(*scores, "Alice", 97);       // Replaces Alice's existing score.
+table_set(*scores, "Dave",  88);       // Adds Dave, since he wasn't in the table.
+    </code>
+</pre>
+
+<h2>Looking Up Values</h2>
+
+<p>
+    Use <code>table_find</code> to look up a key. It returns both the value and a <code>success</code> boolean. The <code>success</code> return is marked <code>#must</code>, so the compiler will error if you discard it. If <code>success</code> is <code>false</code>, the returned value is uninitialized and must not be used. Use <code>table_find_pointer</code> if you need a <a class="rlink" href="pointer.html#definition-pointer">pointer</a> to the value, for example to modify it in place. It returns <code>null</code> if the key is not found.
+</p>
+
+<pre>
+    <code>
+value, success := table_find(*scores, "Alice");
+if success  print("Alice's score is %\n", value);
+
+ptr := table_find_pointer(*scores, "Bob");
+if ptr  ptr.* += 10;   // Give Bob 10 extra points.
+    </code>
+</pre>
+
+<h2>Checking for a Key</h2>
+
+<p>
+    Use <code>table_contains</code> when you only need to know whether a key exists. This is useful when using a table as a set:
+</p>
+
+<pre>
+    <code>
+if table_contains(*scores, "Carol") {
+    print("Carol is in the table.\n");
+}
+    </code>
+</pre>
+
+<h2>Removing Entries</h2>
+
+<p>
+    Use <code>table_remove</code> to remove the first entry matching a given key. It returns a <code>success</code> boolean and the value that was removed:
+</p>
+
+<pre>
+    <code>
+success, removed_value := table_remove(*scores, "Bob");
+if success  print("Removed Bob with score %\n", removed_value);
+    </code>
+</pre>
+
+<h2>Find or Add</h2>
+
+<p>
+    Use <code>find_or_add</code> when you want a pointer to a value for a given key, creating a default-initialized entry if the key does not yet exist:
+</p>
+
+<pre>
+    <code>
+entry, newly_added := find_or_add(*scores, "Eve");
+if newly_added  entry.* = 75;
+    </code>
+</pre>
+
+<h2>Iteration</h2>
+
+<p>
+    Hash tables can be iterated with a <a class="rlink" href="for_loop.html#definition-for-loop">for loop</a>. The loop variable <code>it</code> holds the value, and <code>it_index</code> holds the key. The iteration order is not guaranteed.
+</p>
+
+<pre>
+    <code>
+for scores {
+    print("% has score %\n", it_index, it);
+}
+    </code>
+</pre>
+
+<p>
+    You can iterate by pointer to modify values in place, and you can remove entries during iteration:
+</p>
+
+<pre>
+    <code>
+for * scores {
+    it.* += 5;   // Give everyone 5 bonus points.
+}
+
+for scores {
+    if it < 60  remove it;   // Remove all failing scores.
+}
+    </code>
+</pre>
+
+<h2>Resetting and Freeing</h2>
+
+<p>
+    Use <code>table_reset</code> to clear all entries while keeping the allocated memory. Use <code>deinit</code> to free all memory owned by the table:
+</p>
+
+<pre>
+    <code>
+table_reset(*scores);   // count is now 0, memory still allocated.
+deinit(*scores);        // All memory freed.
+    </code>
+</pre>
