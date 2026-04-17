@@ -17,6 +17,10 @@ for 1..5 print("%", it);  // Outputs: 1 2 3 4 5
     Here we iterate over a number range. The <code>it</code> variable holds the current value, while <code>it_index</code> tracks which iteration we're on.
 </p>
 
+<p>
+    Note that for loops copy the value inside of the collection into the iterator, so if you try and modify the data that <code>it</code> uses, it does not modify the underlying collection. To do this, see the section on iteration by pointer.
+</p>
+
 <h3>Named Iterator</h3>
 
 <pre>
@@ -71,8 +75,21 @@ for *array_of_things {
 </pre>
 
 <p>
-    By adding <code>*</code> before the collection, you iterate over <strong>pointers</strong> to each element. This allows you to modify the original data.
-</p>}
+    If you want to iterate by pointer with a named iterator then you can do this:
+</p>
+
+<pre>
+    <code>
+for *thing : array_of_things {
+    func_that_modifies(thing);  // it is now a pointer to each element
+}
+    </code>
+</pre>
+
+
+<p>
+    Itertion by pointer is important, because in contrast to the regular for loop we can modify the collection via the iterator.
+</p>
 
 <div class="definition" id="definition-named-loops">
     <h2 class="line-text">Named Loops</h2>
