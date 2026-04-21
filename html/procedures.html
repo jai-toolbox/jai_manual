@@ -1,0 +1,565 @@
+<div class="definition" id="definition-procedure">
+    <h2 class="line-text">Procedure</h2>
+    <p>
+        A procedure (also called a proc) is a named, callable block of code that performs a task. It can receive data through an argument list, and it can return one or more values. A procedure that returns nothing returns <code>void</code>. Procedures are declared with <code>::</code>, making them <a class="rlink" href="compilation.html#definition-compile-time">compile-time</a> constants.
+    </p>
+</div>
+
+<pre>
+    <code>
+greet :: () {
+    print("Hello!\n");
+}
+
+double :: (x: int) -> int {
+    return x * 2;
+}
+
+main :: () {
+    greet();                          // Hello!
+    print("% \n", double(7));         // 14
+}
+    </code>
+</pre>
+
+<p>
+    The general form of a procedure declaration is:
+</p>
+
+<pre>
+    <code>
+name :: (arg1: Type1, arg2: Type2) -> ReturnType {
+    // body
+    return ...;
+}
+    </code>
+</pre>
+
+<p>
+    If a procedure does not return a value, the <code>-></code> and return type can be omitted entirely. Each argument must have its type specified individually. The order of procedure declarations at the <a class="rlink" href="compilation.html#definition-top-level-scope">top level</a> does not matter; a procedure can be called before the point where it is declared.
+</p>
+
+<h2>Return</h2>
+
+<p>
+    The <code>return</code> keyword exits the current procedure immediately, breaking out of all inner scopes. It can optionally pass back one or more values. Statements after a <code>return</code> in the same block are not executed.
+</p>
+
+<pre>
+    <code>
+clamp_positive :: (x: int) -> int {
+    if x < 0 return 0;
+    return x;
+}
+    </code>
+</pre>
+
+<h2>Calling a Procedure</h2>
+
+<p>
+    A procedure is called by writing its name followed by parentheses containing the parameters. The number and types of parameters must match the argument list, unless <a class="rlink" href="procedure.html#definition-default-arguments">default arguments</a> are used.
+</p>
+
+<pre>
+    <code>
+add :: (a: int, b: int) -> int { return a + b; }
+
+main :: () {
+    result := add(3, 4);
+    print("result is %\n", result);  // result is 7
+
+    // A procedure call can itself be a parameter:
+    print("nested: %\n", add(add(1, 2), add(3, 4)));  // nested: 10
+}
+    </code>
+</pre>
+
+<h2>Named Arguments</h2>
+
+<p>
+    When calling a procedure, you can pass parameters by argument name using <code>=</code>. This lets you supply arguments in any order and makes calls with many parameters more readable. Once you use a named argument in a call, all subsequent arguments must also be named.
+</p>
+
+<pre>
+    <code>
+create_rect :: (x: float, y: float, width: float, height: float) -> Rect {
+    // ...
+}
+
+r := create_rect(width = 100, height = 50, x = 10, y = 20);
+    </code>
+</pre>
+
+<div class="definition" id="definition-default-arguments">
+    <h2 class="line-text">Default Arguments</h2>
+    <p>
+        A procedure argument can be given a default value. When a call does not provide a parameter for that argument, the default is used. Default values can be literals, variables, or even other procedure calls.
+    </p>
+</div>
+
+<pre>
+    <code>
+spawn :: (x := 0.0, y := 0.0, health := 100) {
+    print("Spawned at (%, %) with % hp\n", x, y, health);
+}
+
+main :: () {
+    spawn();                    // Spawned at (0, 0) with 100 hp
+    spawn(5.0);                 // Spawned at (5, 0) with 100 hp
+    spawn(5.0, 3.0);            // Spawned at (5, 3) with 100 hp
+    spawn(health = 50);         // Spawned at (0, 0) with 50 hp
+    spawn(1.0, health = 200);   // Spawned at (1, 0) with 200 hp
+}
+    </code>
+</pre>
+
+<p>
+    When arguments have default values, the number of parameters in a call can be smaller than the number of arguments. If you want to skip an argument that has a default and provide a later one, you must use <a class="rlink" href="procedure.html#definition-procedure">named arguments</a>.
+</p>
+
+<h2>Multiple Return Values</h2>
+
+<p>
+    A procedure can return more than one value. The return types are listed after <code>-></code>, separated by commas. At the call site, the returned values are assigned to a matching number of variables. It is not required to capture every return value.
+</p>
+
+<pre>
+    <code>
+min_max :: (a: int, b: int) -> int, int {
+    if a < b return a, b;
+    return b, a;
+}
+
+main :: () {
+    lo, hi := min_max(7, 3);
+    print("lo: %, hi: %\n", lo, hi);   // lo: 3, hi: 7
+
+    just_lo := min_max(7, 3);           // Second return value is discarded.
+}
+    </code>
+</pre>
+
+<h3>Named and Default Return Values</h3>
+
+<p>
+    Return values can be given names and default values. Named return values serve as documentation. Default return values are used when the procedure does not explicitly provide a value for them in a <code>return</code> statement.
+</p>
+
+<pre>
+    <code>
+lookup :: (id: int) -> value: int = -1, found: bool = false {
+    if id == 42 return 100, true;
+    return;   // Returns the defaults: -1, false
+}
+
+main :: () {
+    v, ok := lookup(42);
+    print("v: %, ok: %\n", v, ok);   // v: 100, ok: true
+
+    v2, ok2 := lookup(99);
+    print("v: %, ok: %\n", v2, ok2); // v: -1, ok: false
+}
+    </code>
+</pre>
+
+<h3>The _ Identifier</h3>
+
+<p>
+    Use <code>_</code> to explicitly discard a return value you do not need. <code>_</code> does not need to be declared; it always exists.
+</p>
+
+<pre>
+    <code>
+_, found := lookup(42);
+    </code>
+</pre>
+
+<h3>The #must Directive</h3>
+
+<p>
+    Placing <code>#must</code> after the return type(s) of a procedure tells the compiler that the caller must capture the return value. If the caller discards it, the program fails to compile. This prevents a common class of bugs where important results are silently ignored.
+</p>
+
+<pre>
+    <code>
+allocate_buffer :: (size: int) -> *u8 #must {
+    // ...
+}
+
+main :: () {
+    buf := allocate_buffer(1024);   // OK.
+    // allocate_buffer(1024);       // Error: return value is #must and cannot be ignored.
+}
+    </code>
+</pre>
+
+<h2>Passing by Copy vs. Passing by Pointer</h2>
+
+<p>
+    By default, arguments of 8 bytes or fewer (such as <code>int</code>, <code>bool</code>, <code>float</code>, or any <a class="rlink" href="pointer.html#definition-pointer">pointer</a>) are passed by value. The procedure receives a copy, and changes to the copy do not affect the original. Larger types may be passed by reference internally for performance, but the procedure still cannot modify the original.
+</p>
+
+<p>
+    To allow a procedure to modify a variable, pass a <a class="rlink" href="pointer.html#definition-pointer">pointer</a> to it explicitly:
+</p>
+
+<pre>
+    <code>
+reset :: (value: *int) {
+    value.* = 0;
+}
+
+main :: () {
+    score := 42;
+    reset(*score);
+    print("score is %\n", score);   // score is 0
+}
+    </code>
+</pre>
+
+<p>
+    The same applies to <a class="rlink" href="struct.html#definition-struct">structs</a>. Struct arguments are immutable inside a procedure. If you need to modify a struct, pass a pointer to it:
+</p>
+
+<pre>
+    <code>
+Vec2 :: struct { x, y: float; }
+
+scale :: (v: *Vec2, factor: float) {
+    v.x *= factor;
+    v.y *= factor;
+}
+
+main :: () {
+    pos := Vec2.{3.0, 4.0};
+    scale(*pos, 2.0);
+    print("pos is %\n", pos);   // pos is {6, 8}
+}
+    </code>
+</pre>
+
+<p>
+    If you need a mutable copy of a struct argument without modifying the original, make a local copy inside the procedure:
+</p>
+
+<pre>
+    <code>
+normalize :: (v: Vec2) -> Vec2 {
+    result := v;
+    len := sqrt(result.x * result.x + result.y * result.y);
+    result.x /= len;
+    result.y /= len;
+    return result;
+}
+    </code>
+</pre>
+
+<h2>Local Procedures</h2>
+
+<p>
+    Procedures can be declared inside other procedures. A local (or inner) procedure is only visible within the <a class="rlink" href="compilation.html#definition-scope">scope</a> of the enclosing procedure. This is useful for helper functions that have no purpose outside their enclosing context.
+</p>
+
+<pre>
+    <code>
+process :: () {
+    square :: (n: int) -> int { return n * n; }
+
+    print("% \n", square(5));   // 25
+}
+
+main :: () {
+    process();
+    // square(5);   // Error: Undeclared identifier 'square'.
+}
+    </code>
+</pre>
+
+<p>
+    Local procedures have two important restrictions:
+</p>
+
+<ul>
+    <li>An inner procedure <strong>cannot access variables</strong> from its enclosing procedure's stack frame. Attempting to do so produces an error: <em>Attempt to use a variable from an outer stack frame. (Closures are not supported.)</em></li>
+    <li>A local procedure must be <strong>declared before it is called</strong> within a procedure body. Forward references to constant declarations inside procedure bodies are not allowed.</li>
+</ul>
+
+<pre>
+    <code>
+outer :: () {
+    x := 10;
+    inner :: () {
+        // print("%\n", x);   // Error: closures are not supported.
+    }
+    inner();
+}
+    </code>
+</pre>
+
+<h2>Procedure Type and Address</h2>
+
+<p>
+    Every procedure has an address in <a class="rlink" href="pointer.html#definition-computer-memory">memory</a> and a type determined by its signature. You can print a procedure's address, query its type with <code>type_of</code>, and store it in a variable of the matching procedure type:
+</p>
+
+<pre>
+    <code>
+add :: (a: int, b: int) -> int { return a + b; }
+
+main :: () {
+    print("address: %\n", add);            // procedure 0x7ff...
+    print("type: %\n", type_of(add));      // procedure (s64, s64) -> s64
+
+    op: (int, int) -> int = add;
+    print("result: %\n", op(10, 20));      // result: 30
+}
+    </code>
+</pre>
+
+<p>
+    Procedure pointers (also called function pointers) can be passed as arguments to other procedures, stored in arrays, and used as callbacks.
+</p>
+
+<h2>Lambda Expressions</h2>
+
+<p>
+    A lambda is a short-hand syntax for defining a procedure inline. The <code>=></code> arrow creates a one-expression body whose result is implicitly returned. Types on the arguments can be omitted when they can be inferred.
+</p>
+
+<pre>
+    <code>
+add :: (a, b) => a + b;
+
+main :: () {
+    print("%\n", add(3, 4));   // 7
+}
+    </code>
+</pre>
+
+<h2>Anonymous Procedures</h2>
+
+<p>
+    A procedure does not need a name. An anonymous procedure can be called immediately at its definition site, or assigned to a variable for later use:
+</p>
+
+<pre>
+    <code>
+main :: () {
+    // Immediately invoked:
+    result := (x: int, y: int) -> int {
+        return x * y;
+    }(6, 7);
+    print("result is %\n", result);   // result is 42
+
+    // Assigned to a variable:
+    greet := () {
+        print("Hi!\n");
+    };
+    greet();   // Hi!
+}
+    </code>
+</pre>
+
+<h2>Overloading</h2>
+
+<p>
+    Multiple procedures can share the same name as long as their argument lists differ in type. The compiler selects the best match based on the types of the parameters passed at the call site:
+</p>
+
+<pre>
+    <code>
+describe :: (n: int)    { print("An integer: %\n", n); }
+describe :: (s: string) { print("A string: %\n", s); }
+describe :: (f: float)  { print("A float: %\n", f); }
+
+main :: () {
+    describe(42);           // An integer: 42
+    describe("hello");      // A string: hello
+    describe(3.14);         // A float: 3.14
+}
+    </code>
+</pre>
+
+<p>
+    Two overloads on the same <a class="rlink" href="compilation.html#definition-scope">scope</a> level cannot have identical argument lists. When overloads exist at different scope levels (for example, one global and one local), the compiler considers all of them and picks the best fit. If a local overload fits exactly, it is preferred.
+</p>
+
+<h2>Inlining</h2>
+
+<p>
+    Inlining replaces a procedure call with the procedure's body at the call site, eliminating the overhead of the call. Jai gives you explicit control over this with the <code>inline</code> and <code>no_inline</code> keywords. These are not hints; the compiler will obey them.
+</p>
+
+<p>
+    There are two places to specify inlining:
+</p>
+
+<ul>
+    <li><strong>At the declaration:</strong> place <code>inline</code> or <code>no_inline</code> before the argument list.</li>
+    <li><strong>At the call site:</strong> place <code>inline</code> or <code>no_inline</code> before the call expression.</li>
+</ul>
+
+<pre>
+    <code>
+fast_abs :: inline (x: int) -> int {
+    if x < 0 return -x;
+    return x;
+}
+
+slow_path :: (x: int) -> int { return x * x; }
+
+main :: () {
+    a := fast_abs(-5);            // Inlined: declared as inline.
+    b := no_inline fast_abs(-5);  // Not inlined: overridden at call site.
+
+    c := slow_path(3);            // Normal call.
+    d := inline slow_path(3);     // Inlined: overridden at call site.
+}
+    </code>
+</pre>
+
+<h2>Recursion</h2>
+
+<p>
+    A recursive procedure is one that calls itself. Every recursive procedure must have a base case that stops the recursion; otherwise the program will exhaust the stack and crash with a stack overflow.
+</p>
+
+<pre>
+    <code>
+power :: (base: int, exp: int) -> int {
+    if exp == 0 return 1;
+    return base * power(base, exp - 1);
+}
+
+main :: () {
+    print("2^10 = %\n", power(2, 10));   // 2^10 = 1024
+}
+    </code>
+</pre>
+
+<h3>The #this Directive</h3>
+
+<p>
+    <code>#this</code> refers to the current procedure as a <a class="rlink" href="compilation.html#definition-compile-time">compile-time</a> constant. It can be used in place of the procedure's name inside its own body. This is occasionally useful in recursive procedures or when you want a reference to the enclosing procedure without hard-coding its name:
+</p>
+
+<pre>
+    <code>
+countdown :: (n: int) {
+    if n <= 0 return;
+    print("% ", n);
+    #this(n - 1);
+}
+
+main :: () {
+    countdown(5);   // 5 4 3 2 1
+    print("#this is %\n", #this);   // prints the address of main
+}
+    </code>
+</pre>
+
+<h2>Autocast with xx</h2>
+
+<p>
+    If a parameter's type does not match the argument type, you can prefix the parameter with <code>xx</code> to auto-cast it. The value is cast to the expected type at the call site:
+</p>
+
+<pre>
+    <code>
+draw_circle :: (radius: float) {
+    print("radius: %\n", radius);
+}
+
+main :: () {
+    r: int = 10;
+    // draw_circle(r);      // Error: type mismatch.
+    draw_circle(xx r);      // OK: r is auto-cast to float.
+}
+    </code>
+</pre>
+
+<h2>Using with Procedure Arguments</h2>
+
+<p>
+    Placing <code>using</code> on a <a class="rlink" href="struct.html#definition-struct">struct</a> pointer argument brings that struct's fields into the procedure body's <a class="rlink" href="compilation.html#definition-scope">scope</a>. This provides a style similar to methods in other languages. See <a class="rlink" href="using.html">using</a> for more details.
+</p>
+
+<pre>
+    <code>
+Entity :: struct {
+    x, y: float;
+    name: string;
+}
+
+move_right :: (using e: *Entity, amount: float) {
+    x += amount;
+    print("% moved to x=%\n", name, x);
+}
+
+main :: () {
+    player := Entity.{0, 0, "Player"};
+    move_right(*player, 5.0);   // Player moved to x=5
+}
+    </code>
+</pre>
+
+<h2>The #deprecated Directive</h2>
+
+<p>
+    Marking a procedure with <code>#deprecated</code> causes the compiler to emit a warning whenever it is called. An optional message string tells the caller what to use instead:
+</p>
+
+<pre>
+    <code>
+old_save :: () #deprecated "Use save_to_disk() instead." {
+    // ...
+}
+
+save_to_disk :: () {
+    // ...
+}
+
+main :: () {
+    old_save();
+    // Warning: This procedure is deprecated. Note: "Use save_to_disk() instead."
+}
+    </code>
+</pre>
+
+<h2>Reflection on Procedures</h2>
+
+<p>
+    You can inspect a procedure's argument types and return types at runtime using Jai's type introspection system. Cast the result of <code>type_info(type_of(proc))</code> to <code>*Type_Info_Procedure</code> to access the <code>argument_types</code> and <code>return_types</code> arrays:
+</p>
+
+<pre>
+    <code>
+add :: (a: int, b: int) -> int { return a + b; }
+
+main :: () {
+    info := cast(*Type_Info_Procedure) type_info(type_of(add));
+    print("kind: %\n", info.type);   // PROCEDURE
+
+    print("arguments: ");
+    for info.argument_types print("% ", <<it);
+
+    print("\nreturns: ");
+    for info.return_types print("% ", <<it);
+    print("\n");
+}
+    </code>
+</pre>
+
+<h3>The #procedure_name Directive</h3>
+
+<p>
+    <code>#procedure_name()</code> returns the name of the current procedure as a string, known at <a class="rlink" href="compilation.html#definition-compile-time">compile time</a>. This is useful for logging and diagnostics:
+</p>
+
+<pre>
+    <code>
+do_work :: () {
+    print("Inside %\n", #procedure_name());   // Inside do_work
+}
+    </code>
+</pre>
