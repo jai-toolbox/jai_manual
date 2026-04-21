@@ -131,6 +131,47 @@ for scores {
     </code>
 </pre>
 
+<p>
+    You can rename <code>it</code> and <code>it_index</code> using the standard <a class="rlink" href="for_loop.html#definition-for-loop">named iterator</a> syntax. Place the value name first, then the key name, separated by a comma, before the <code>:</code>:
+</p>
+
+<pre>
+    <code>
+for value, key : scores {
+    print("% has score %\n", key, value);
+}
+    </code>
+</pre>
+
+<p>
+    This also combines with pointer iteration, letting you modify values in place while using custom names:
+</p>
+
+<pre>
+    <code>
+for * entry, key : scores {
+    print("Boosting %'s score\n", key);
+    entry.* += 5;   // Give everyone 5 bonus points.
+}
+    </code>
+</pre>
+
+<p>
+    You can also iterate by pointer or remove entries without custom names:
+</p>
+
+<pre>
+    <code>
+for * scores {
+    it.* += 5;   // Give everyone 5 bonus points.
+}
+
+for scores {
+    if it < 60  remove it;   // Remove all failing scores.
+}
+    </code>
+</pre>
+
 <h2>Resetting and Freeing</h2>
 
 <p>
