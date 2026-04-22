@@ -234,7 +234,7 @@ push_context new_context {
 
 <pre>
     <code>
-print("temporary storage: %\n", <<context.temporary_storage);
+print("temporary storage: %\n", context.temporary_storage.*);
 // Shows fields: data, size, occupied, high_water_mark, overflow_allocator, etc.
     </code>
 </pre>
