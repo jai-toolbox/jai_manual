@@ -1,0 +1,417 @@
+<div class="definition" id="definition-context">
+    <h2 class="line-text">Context</h2>
+    <p>
+        The context is a struct that is implicitly passed from procedure to procedure as your program runs. It contains fields that control common cross cutting operations such as <a class="rlink" href="pointer.html#definition-computer-memory">memory</a> allocation, logging, assertion handling, and temporary storage. Every procedure in Jai has access to the context through the keyword <code>context</code>, unless the procedure is marked <a class="rlink" href="context.html#definition-no-context"><code>#no_context</code></a> or <a class="rlink" href="context.html#definition-c-call"><code>#c_call</code></a>.
+    </p>
+    <p>
+        The context establishes shared conventions so that independently written modules can coordinate without needing custom APIs for memory allocation, logging, or other common facilities. By changing the context before calling a procedure, the caller can control how that procedure (and everything it calls) performs these operations, even if the caller did not write that code and does not want to modify it.
+    </p>
+</div>
+
+<pre>
+    <code>
+bare_procedure :: () {
+    print("The context is: %\n", context);
+}
+    </code>
+</pre>
+
+<h2>Context Base</h2>
+
+<p>
+    The context begins with the fields defined in <code>Context_Base</code>, which is declared in the <code>Runtime_Support</code> module. These fields provide the default facilities available to every Jai program:
+</p>
+
+<table>
+    <tr><th>Field</th><th>Purpose</th></tr>
+    <tr>
+        <td><code>allocator</code></td>
+        <td>The memory allocator used by <code>alloc</code>, <code>New</code>, and other allocation routines. Contains a procedure and a data <a class="rlink" href="pointer.html#definition-pointer">pointer</a>.</td>
+    </tr>
+    <tr>
+        <td><code>logger</code> / <code>logger_data</code></td>
+        <td>The procedure called by <code>log</code> to emit messages, along with an associated data pointer.</td>
+    </tr>
+    <tr>
+        <td><code>log_level</code></td>
+        <td>The current log severity level.</td>
+    </tr>
+    <tr>
+        <td><code>log_source_identifier</code></td>
+        <td>A <code>u64</code> identifier that can be set to tag log output from a particular source.</td>
+    </tr>
+    <tr>
+        <td><code>assertion_failed</code></td>
+        <td>The procedure called when an assertion fails.</td>
+    </tr>
+    <tr>
+        <td><code>temporary_storage</code></td>
+        <td>A <a class="rlink" href="pointer.html#definition-pointer">pointer</a> to the current thread's <a class="rlink" href="context.html#definition-temporary-storage">temporary storage</a> arena.</td>
+    </tr>
+    <tr>
+        <td><code>stack_trace</code></td>
+        <td>A <a class="rlink" href="pointer.html#definition-pointer">pointer</a> to the head of the current <a class="rlink" href="context.html#definition-stack-trace">stack trace</a> linked list.</td>
+    </tr>
+    <tr>
+        <td><code>thread_index</code></td>
+        <td>A <code>u32</code> identifying the current thread. Each thread receives its own independent context.</td>
+    </tr>
+    <tr>
+        <td><code>default_allocator</code></td>
+        <td>The program's original allocator, preserved so that custom allocators can fall back to it.</td>
+    </tr>
+</table>
+
+<h2>Reading and Writing the Context</h2>
+
+<p>
+    The context behaves like any other <a class="rlink" href="struct.html#definition-struct">struct</a> instance. You can read its fields with dot notation and assign to them directly. When you modify the context inside a procedure, the change is visible to that procedure's callees and persists after they return. Because the context is shared mutable state, changes also remain visible to the caller after the procedure returns:
+</p>
+
+<pre>
+    <code>
+proc_a :: () {
+    print("before: %\n", context.silly_number);  // 33
+    proc_b();
+    print("after:  %\n", context.silly_number);  // 34, the change leaked back.
+}
+
+proc_b :: () {
+    context.silly_number += 1;
+}
+    </code>
+</pre>
+
+<p>
+    This upward flow is sometimes intentional (for example, passing error state up through many layers without requiring exception handling), but often it is not desirable. To prevent changes from leaking, use <a class="rlink" href="context.html#definition-push-context"><code>push_context</code></a>.
+</p>
+
+<div class="definition" id="definition-push-context">
+    <h2 class="line-text">push_context</h2>
+    <p>
+        <code>push_context</code> replaces the active context for the duration of a block. When the block ends, the previous context is restored automatically. This prevents modifications made inside the block from leaking to the caller.
+    </p>
+</div>
+
+<p>
+    To use <code>push_context</code>, copy the current context into a local variable, modify whatever fields you need, and then enter the block:
+</p>
+
+<pre>
+    <code>
+wrapper :: () {
+    print("before: %\n", context.silly_number);  // 33
+
+    new_context := context;
+    new_context.silly_number += 1;
+
+    push_context new_context {
+        print("inside: %\n", context.silly_number);  // 34
+        some_procedure();  // Also sees 34, and any further changes stay inside.
+    }
+
+    print("after: %\n", context.silly_number);   // 33, restored.
+}
+    </code>
+</pre>
+
+<p>
+    You can also write <code>push_context</code> with no argument to push a default initialized context. This is especially useful inside <a class="rlink" href="context.html#definition-c-call"><code>#c_call</code></a> procedures that need to call back into normal Jai code:
+</p>
+
+<pre>
+    <code>
+push_context {
+    // A default context is active here.
+    print("Hello from inside a default context.\n");
+}
+    </code>
+</pre>
+
+<hr>
+
+<h2>Memory Allocation</h2>
+
+<p>
+    The standard allocation procedure <code>alloc</code> obtains memory by calling <code>context.allocator</code>. Because the allocator lives in the context, you can replace it for any subtree of your call graph without modifying the source code of the procedures in that subtree.
+</p>
+
+<p>
+    An allocator is a single procedure that handles allocation, reallocation, and freeing, selected by the <code>mode</code> parameter of type <code>Allocator_Mode</code>. Packaging all operations into one procedure means you swap them all at once, which prevents mismatches between the allocator used to obtain memory and the one used to free it.
+</p>
+
+<pre>
+    <code>
+my_allocator_proc :: (mode: Allocator_Mode, size: s64, old_size: s64, old_memory_pointer: *void, proc_data: *void) -> *void {
+    if mode == .ALLOCATE && size == 42 {
+        print("Hello, Sailor! 42 byte allocation requested!\n");
+    }
+    return context.default_allocator.proc(mode, size, old_size, old_memory_pointer, proc_data);
+}
+
+install_example :: () {
+    new_context := context;
+    new_context.allocator.proc = my_allocator_proc;
+    new_context.allocator.data = null;
+
+    push_context new_context {
+        // Everything called here uses my_allocator_proc.
+        mem := alloc(42);  // Prints the greeting.
+        free(mem);
+    }
+
+    // Outside the block, the original allocator is active again.
+    mem := alloc(42);  // No greeting.
+    free(mem);
+}
+    </code>
+</pre>
+
+<p>
+    Long lived data structures such as <a class="rlink" href="resizable_array.html#definition-resizable-array">resizable arrays</a> and hash tables store the allocator that was active when they were first used. They call that saved allocator consistently afterward, rather than using whatever <code>context.allocator</code> happens to be at the moment. This ensures that memory is always freed with the same allocator that allocated it.
+</p>
+
+<div class="definition" id="definition-push-allocator">
+    <h2 class="line-text">push_allocator</h2>
+    <p>
+        <code>push_allocator</code> is a macro that changes only the allocator in the current context for the current <a class="rlink" href="compilation.html#definition-scope">scope</a>. When the scope exits, the previous allocator is restored. It is a lighter weight alternative to <a class="rlink" href="context.html#definition-push-context"><code>push_context</code></a> when only the allocator needs to change.
+    </p>
+</div>
+
+<pre>
+    <code>
+{
+    push_allocator(temp);
+    // Allocations in this scope use temporary storage.
+    s := copy_string("ephemeral");
+}
+// Previous allocator is restored here.
+    </code>
+</pre>
+
+<hr>
+
+<h2>Logging</h2>
+
+<p>
+    The <code>log</code> procedure from the <code>Basic</code> module formats a message and sends it to <code>context.logger</code>. Its signature is:
+</p>
+
+<pre>
+    <code>
+log :: (format_string: string, args: .. Any, loc := #caller_location, flags := Log_Flags.NONE, user_flags: u32 = 0);
+    </code>
+</pre>
+
+<p>
+    To redirect log output, replace <code>context.logger</code> and optionally <code>context.logger_data</code> in a <a class="rlink" href="context.html#definition-push-context"><code>push_context</code></a> block, exactly as you would replace the allocator. This makes it straightforward to, for example, send logging from one subsystem to a file and logging from another subsystem to the console, or to silence logging entirely in a release build unless a special flag is set.
+</p>
+
+<pre>
+    <code>
+my_logger :: (message: string, data: *void, info: Log_Info) {
+    // Write to a file, filter by level, etc.
+}
+
+new_context := context;
+new_context.logger = my_logger;
+new_context.logger_data = null;
+
+push_context new_context {
+    log("This message is routed to my_logger.\n");
+}
+    </code>
+</pre>
+
+<hr>
+
+<div class="definition" id="definition-temporary-storage">
+    <h2 class="line-text">Temporary Storage</h2>
+    <p>
+        Temporary storage is a per thread arena allocator accessible through <code>context.temporary_storage</code>. It provides fast allocation for short lived data. Memory obtained from temporary storage does not need to be freed individually; instead, the arena is reset in bulk, typically once per frame or once per task. Procedures such as <code>tprint</code> allocate from temporary storage instead of the heap.
+    </p>
+</div>
+
+<pre>
+    <code>
+print("temporary storage: %\n", <<context.temporary_storage);
+// Shows fields: data, size, occupied, high_water_mark, overflow_allocator, etc.
+    </code>
+</pre>
+
+<hr>
+
+<div class="definition" id="definition-stack-trace">
+    <h2 class="line-text">Stack Trace</h2>
+    <p>
+        The stack trace is a cross platform linked list of <code>Stack_Trace_Node</code> values that records the active call chain at any point during execution. It is accessible through <code>context.stack_trace</code>. Each node contains the procedure name, source file, line number, call depth, and a hash. The stack trace is maintained automatically when the <code>stack_trace</code> build option is enabled (which is the default).
+    </p>
+</div>
+
+<p>
+    You can walk the stack trace at any time by following the <code>next</code> pointers:
+</p>
+
+<pre>
+    <code>
+node := context.stack_trace;
+while node {
+    if node.info {
+        print("[%] at %:%\n", node.info.name, node.info.location.fully_pathed_filename, node.line_number);
+    }
+    node = node.next;
+}
+    </code>
+</pre>
+
+<p>
+    The <code>Basic</code> module provides <code>print_stack_trace</code> for convenience. To save a stack trace for later inspection, use <code>pack_stack_trace</code>, which copies the trace into a standalone data structure. The address of the current procedure is available through <code>context.stack_trace.info.procedure_address</code>.
+</p>
+
+<p>
+    Stack traces are useful for writing instrumentation code such as profilers and memory debuggers. When the build option is enabled, every procedure call emits code to push a <code>Stack_Trace_Node</code> onto the linked list and pop it on return.
+</p>
+
+<hr>
+
+<div class="definition" id="definition-assertion-handler">
+    <h2 class="line-text">Assertion Handler</h2>
+    <p>
+        The <code>assertion_failed</code> field in the context is the procedure called when <code>assert</code> from the <code>Basic</code> module detects a false condition. By replacing this field, you can customize how assertion failures are reported or handled, for example by logging to a file, triggering a debugger break, or performing cleanup before aborting.
+    </p>
+</div>
+
+<hr>
+
+<div class="definition" id="definition-add-context">
+    <h2 class="line-text">#add_context</h2>
+    <p>
+        The <code>#add_context</code> directive adds a new field declaration to the <code>Context</code> struct. The declaration is written exactly as it would appear inside a <a class="rlink" href="struct.html#definition-struct">struct</a> body. Any file in the program, including <a class="rlink" href="compilation.html#definition-module">modules</a>, can use <code>#add_context</code>, and the field becomes accessible through the <code>context</code> keyword everywhere. Because each thread has its own context, fields added with <code>#add_context</code> are effectively thread local without requiring any special thread local storage mechanism.
+    </p>
+</div>
+
+<pre>
+    <code>
+#add_context silly_number: int = 33;
+
+example :: () {
+    print("%\n", context.silly_number);  // 33
+    context.silly_number = 99;
+    print("%\n", context.silly_number);  // 99
+}
+    </code>
+</pre>
+
+<p>
+    You are not limited to simple types; any data type can be added. However, there is potential for naming conflicts: if two modules or a module and the main program add a field with the same name, the program will not compile.
+</p>
+
+<hr>
+
+<div class="definition" id="definition-print-style">
+    <h2 class="line-text">Print Style</h2>
+    <p>
+        The context contains a <code>print_style</code> field that holds the default format settings used by <code>print</code>. It includes formatters for integers, floats, structs, arrays, and pointers. By modifying these formatters inside a <a class="rlink" href="context.html#definition-push-context"><code>push_context</code></a> block, you can change how values are displayed without passing explicit format arguments to every <code>print</code> call.
+    </p>
+</div>
+
+<pre>
+    <code>
+NUMBERS :: u32.[1, 69105, 1491625];
+
+new_context := context;
+push_context new_context {
+    format_int := *context.print_style.default_format_int;
+
+    for NUMBERS  print("% ", it);   // 1 69105 1491625
+    print("\n");
+
+    format_int.base = 16;
+    for NUMBERS  print("% ", it);   // 1 10df1 16c2a9
+    print("\n");
+
+    format_int.base = 2;
+    for NUMBERS  print("% ", it);   // 1 10000110111110001 101101100001010101001
+    print("\n");
+}
+
+// Outside the block, the default base 10 formatting is restored.
+for NUMBERS  print("% ", it);       // 1 69105 1491625
+    </code>
+</pre>
+
+<hr>
+
+<div class="definition" id="definition-thread-index">
+    <h2 class="line-text">Thread Index</h2>
+    <p>
+        Each thread has its own context, and <code>context.thread_index</code> is a <code>u32</code> that uniquely identifies the thread. Because the context is per thread, any field added with <a class="rlink" href="context.html#definition-add-context"><code>#add_context</code></a> is automatically thread local, and accessing it does not require paying the cost of a thread local storage (TLS) lookup.
+    </p>
+</div>
+
+<hr>
+
+<div class="definition" id="definition-no-context">
+    <h2 class="line-text">#no_context</h2>
+    <p>
+        A procedure marked <code>#no_context</code> does not receive or have access to the context. Such procedures cannot call any procedure that requires a context unless they first establish one with <a class="rlink" href="context.html#definition-push-context"><code>push_context</code></a>. Many low level procedures in the <code>Preload</code> module are marked <code>#no_context</code> because they do not need it.
+    </p>
+</div>
+
+<div class="definition" id="definition-c-call">
+    <h2 class="line-text">#c_call</h2>
+    <p>
+        A procedure marked <code>#c_call</code> uses the C calling convention and does not receive a context. This is necessary for procedures that are registered as callbacks with C libraries. To call a normal Jai procedure from inside a <code>#c_call</code> procedure, you must push a context first:
+    </p>
+</div>
+
+<pre>
+    <code>
+callback :: (x: int) -> int #c_call {
+    // print("...", x);  // Error: no context available.
+
+    push_context {
+        print("callback received %\n", x);  // Works: default context is active.
+    }
+
+    return x * x;
+}
+    </code>
+</pre>
+
+<hr>
+
+<h2>Summary of Replaceable Facilities</h2>
+
+<p>
+    The context provides a uniform mechanism for controlling operations that, in other languages, each require their own library specific API. The following table summarizes the main replaceable fields:
+</p>
+
+<table>
+    <tr><th>Facility</th><th>Context Field(s)</th><th>Used By</th></tr>
+    <tr>
+        <td>Memory allocation</td>
+        <td><code>allocator.proc</code>, <code>allocator.data</code></td>
+        <td><code>alloc</code>, <code>New</code>, <code>free</code>, <a class="rlink" href="resizable_array.html#definition-resizable-array">resizable arrays</a></td>
+    </tr>
+    <tr>
+        <td>Logging</td>
+        <td><code>logger</code>, <code>logger_data</code></td>
+        <td><code>log</code></td>
+    </tr>
+    <tr>
+        <td>Assertion handling</td>
+        <td><code>assertion_failed</code></td>
+        <td><code>assert</code></td>
+    </tr>
+    <tr>
+        <td>Temporary allocation</td>
+        <td><code>temporary_storage</code></td>
+        <td><code>tprint</code>, <code>talloc</code>, <a class="rlink" href="context.html#definition-push-allocator"><code>push_allocator(temp)</code></a></td>
+    </tr>
+    <tr>
+        <td>Print formatting</td>
+        <td><code>print_style</code></td>
+        <td><code>print</code></td>
+    </tr>
+</table>
