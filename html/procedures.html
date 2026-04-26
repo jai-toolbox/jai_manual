@@ -7,17 +7,17 @@
 
 <pre>
     <code>
-greet :: () {
-    print("Hello!\n");
+welcome :: () {
+    print("Welcome aboard!\n");
 }
 
-double :: (x: int) -> int {
-    return x * 2;
+triple :: (x: int) -> int {
+    return x * 3;
 }
 
 main :: () {
-    greet();                          // Hello!
-    print("% \n", double(7));         // 14
+    welcome();                          // Welcome aboard!
+    print("% \n", triple(9));           // 27
 }
     </code>
 </pre>
@@ -47,7 +47,7 @@ name :: (arg1: Type1, arg2: Type2) -> ReturnType {
 
 <pre>
     <code>
-clamp_positive :: (x: int) -> int {
+floor_at_zero :: (x: int) -> int {
     if x < 0 return 0;
     return x;
 }
@@ -62,14 +62,14 @@ clamp_positive :: (x: int) -> int {
 
 <pre>
     <code>
-add :: (a: int, b: int) -> int { return a + b; }
+multiply :: (a: int, b: int) -> int { return a * b; }
 
 main :: () {
-    result := add(3, 4);
-    print("result is %\n", result);  // result is 7
+    result := multiply(3, 4);
+    print("result is %\n", result);  // result is 12
 
     // A procedure call can itself be a parameter:
-    print("nested: %\n", add(add(1, 2), add(3, 4)));  // nested: 10
+    print("nested: %\n", multiply(multiply(2, 3), multiply(4, 5)));  // nested: 120
 }
     </code>
 </pre>
@@ -82,11 +82,11 @@ main :: () {
 
 <pre>
     <code>
-create_rect :: (x: float, y: float, width: float, height: float) -> Rect {
+create_window :: (x: float, y: float, width: float, height: float) -> Window {
     // ...
 }
 
-r := create_rect(width = 100, height = 50, x = 10, y = 20);
+w := create_window(width = 800, height = 600, x = 50, y = 100);
     </code>
 </pre>
 
@@ -99,16 +99,16 @@ r := create_rect(width = 100, height = 50, x = 10, y = 20);
 
 <pre>
     <code>
-spawn :: (x := 0.0, y := 0.0, health := 100) {
-    print("Spawned at (%, %) with % hp\n", x, y, health);
+launch :: (altitude := 0.0, heading := 0.0, thrust := 100) {
+    print("Launching at alt %, heading %, thrust %\n", altitude, heading, thrust);
 }
 
 main :: () {
-    spawn();                    // Spawned at (0, 0) with 100 hp
-    spawn(5.0);                 // Spawned at (5, 0) with 100 hp
-    spawn(5.0, 3.0);            // Spawned at (5, 3) with 100 hp
-    spawn(health = 50);         // Spawned at (0, 0) with 50 hp
-    spawn(1.0, health = 200);   // Spawned at (1, 0) with 200 hp
+    launch();                        // Launching at alt 0, heading 0, thrust 100
+    launch(500.0);                   // Launching at alt 500, heading 0, thrust 100
+    launch(500.0, 90.0);             // Launching at alt 500, heading 90, thrust 100
+    launch(thrust = 50);             // Launching at alt 0, heading 0, thrust 50
+    launch(200.0, thrust = 75);      // Launching at alt 200, heading 0, thrust 75
 }
     </code>
 </pre>
@@ -125,16 +125,15 @@ main :: () {
 
 <pre>
     <code>
-min_max :: (a: int, b: int) -> int, int {
-    if a < b return a, b;
-    return b, a;
+divide :: (a: int, b: int) -> int, int {
+    return a / b, a % b;
 }
 
 main :: () {
-    lo, hi := min_max(7, 3);
-    print("lo: %, hi: %\n", lo, hi);   // lo: 3, hi: 7
+    quotient, remainder := divide(17, 5);
+    print("quotient: %, remainder: %\n", quotient, remainder);   // quotient: 3, remainder: 2
 
-    just_lo := min_max(7, 3);           // Second return value is discarded.
+    just_quotient := divide(17, 5);           // Second return value is discarded.
 }
     </code>
 </pre>
@@ -147,17 +146,17 @@ main :: () {
 
 <pre>
     <code>
-lookup :: (id: int) -> value: int = -1, found: bool = false {
-    if id == 42 return 100, true;
+fetch :: (key: string) -> data: int = -1, exists: bool = false {
+    if key == "secret" return 42, true;
     return;   // Returns the defaults: -1, false
 }
 
 main :: () {
-    v, ok := lookup(42);
-    print("v: %, ok: %\n", v, ok);   // v: 100, ok: true
+    d, ok := fetch("secret");
+    print("d: %, ok: %\n", d, ok);   // d: 42, ok: true
 
-    v2, ok2 := lookup(99);
-    print("v: %, ok: %\n", v2, ok2); // v: -1, ok: false
+    d2, ok2 := fetch("missing");
+    print("d: %, ok: %\n", d2, ok2); // d: -1, ok: false
 }
     </code>
 </pre>
@@ -170,26 +169,7 @@ main :: () {
 
 <pre>
     <code>
-_, found := lookup(42);
-    </code>
-</pre>
-
-<h3>The #must Directive</h3>
-
-<p>
-    Placing <code>#must</code> after the return type(s) of a procedure tells the compiler that the caller must capture the return value. If the caller discards it, the program fails to compile. This prevents a common class of bugs where important results are silently ignored.
-</p>
-
-<pre>
-    <code>
-allocate_buffer :: (size: int) -> *u8 #must {
-    // ...
-}
-
-main :: () {
-    buf := allocate_buffer(1024);   // OK.
-    // allocate_buffer(1024);       // Error: return value is #must and cannot be ignored.
-}
+_, exists := fetch("secret");
     </code>
 </pre>
 
@@ -205,14 +185,14 @@ main :: () {
 
 <pre>
     <code>
-reset :: (value: *int) {
+clear :: (value: *int) {
     value.* = 0;
 }
 
 main :: () {
-    score := 42;
-    reset(*score);
-    print("score is %\n", score);   // score is 0
+    health := 75;
+    clear(*health);
+    print("health is %\n", health);   // health is 0
 }
     </code>
 </pre>
@@ -223,17 +203,17 @@ main :: () {
 
 <pre>
     <code>
-Vec2 :: struct { x, y: float; }
+Point :: struct { x, y: float; }
 
-scale :: (v: *Vec2, factor: float) {
-    v.x *= factor;
-    v.y *= factor;
+translate :: (p: *Point, dx: float, dy: float) {
+    p.x += dx;
+    p.y += dy;
 }
 
 main :: () {
-    pos := Vec2.{3.0, 4.0};
-    scale(*pos, 2.0);
-    print("pos is %\n", pos);   // pos is {6, 8}
+    cursor := Point.{10.0, 20.0};
+    translate(*cursor, 5.0, -3.0);
+    print("cursor is %\n", cursor);   // cursor is {15, 17}
 }
     </code>
 </pre>
@@ -244,8 +224,8 @@ main :: () {
 
 <pre>
     <code>
-normalize :: (v: Vec2) -> Vec2 {
-    result := v;
+unit_direction :: (p: Point) -> Point {
+    result := p;
     len := sqrt(result.x * result.x + result.y * result.y);
     result.x /= len;
     result.y /= len;
@@ -262,15 +242,15 @@ normalize :: (v: Vec2) -> Vec2 {
 
 <pre>
     <code>
-process :: () {
-    square :: (n: int) -> int { return n * n; }
+analyze :: () {
+    cube :: (n: int) -> int { return n * n * n; }
 
-    print("% \n", square(5));   // 25
+    print("% \n", cube(4));   // 64
 }
 
 main :: () {
-    process();
-    // square(5);   // Error: Undeclared identifier 'square'.
+    analyze();
+    // cube(4);   // Error: Undeclared identifier 'cube'.
 }
     </code>
 </pre>
@@ -286,12 +266,12 @@ main :: () {
 
 <pre>
     <code>
-outer :: () {
-    x := 10;
-    inner :: () {
-        // print("%\n", x);   // Error: closures are not supported.
+wrapper :: () {
+    val := 10;
+    helper :: () {
+        // print("%\n", val);   // Error: closures are not supported.
     }
-    inner();
+    helper();
 }
     </code>
 </pre>
@@ -304,14 +284,14 @@ outer :: () {
 
 <pre>
     <code>
-add :: (a: int, b: int) -> int { return a + b; }
+multiply :: (a: int, b: int) -> int { return a * b; }
 
 main :: () {
-    print("address: %\n", add);            // procedure 0x7ff...
-    print("type: %\n", type_of(add));      // procedure (s64, s64) -> s64
+    print("address: %\n", multiply);            // procedure 0x7ff...
+    print("type: %\n", type_of(multiply));      // procedure (s64, s64) -> s64
 
-    op: (int, int) -> int = add;
-    print("result: %\n", op(10, 20));      // result: 30
+    op: (int, int) -> int = multiply;
+    print("result: %\n", op(6, 7));             // result: 42
 }
     </code>
 </pre>
@@ -328,10 +308,10 @@ main :: () {
 
 <pre>
     <code>
-add :: (a, b) => a + b;
+subtract :: (a, b) => a - b;
 
 main :: () {
-    print("%\n", add(3, 4));   // 7
+    print("%\n", subtract(10, 3));   // 7
 }
     </code>
 </pre>
@@ -347,15 +327,15 @@ main :: () {
 main :: () {
     // Immediately invoked:
     result := (x: int, y: int) -> int {
-        return x * y;
-    }(6, 7);
+        return x + y;
+    }(15, 27);
     print("result is %\n", result);   // result is 42
 
     // Assigned to a variable:
-    greet := () {
-        print("Hi!\n");
+    shout := () {
+        print("Hey!\n");
     };
-    greet();   // Hi!
+    shout();   // Hey!
 }
     </code>
 </pre>
@@ -368,14 +348,14 @@ main :: () {
 
 <pre>
     <code>
-describe :: (n: int)    { print("An integer: %\n", n); }
-describe :: (s: string) { print("A string: %\n", s); }
-describe :: (f: float)  { print("A float: %\n", f); }
+show :: (n: int)    { print("An integer: %\n", n); }
+show :: (s: string) { print("A string: %\n", s); }
+show :: (f: float)  { print("A float: %\n", f); }
 
 main :: () {
-    describe(42);           // An integer: 42
-    describe("hello");      // A string: hello
-    describe(3.14);         // A float: 3.14
+    show(99);             // An integer: 99
+    show("world");        // A string: world
+    show(2.718);          // A float: 2.718
 }
     </code>
 </pre>
@@ -401,19 +381,18 @@ main :: () {
 
 <pre>
     <code>
-fast_abs :: inline (x: int) -> int {
-    if x < 0 return -x;
-    return x;
+quick_negate :: inline (x: int) -> int {
+    return -x;
 }
 
-slow_path :: (x: int) -> int { return x * x; }
+heavy_compute :: (x: int) -> int { return x * x * x; }
 
 main :: () {
-    a := fast_abs(-5);            // Inlined: declared as inline.
-    b := no_inline fast_abs(-5);  // Not inlined: overridden at call site.
+    a := quick_negate(7);               // Inlined: declared as inline.
+    b := no_inline quick_negate(7);     // Not inlined: overridden at call site.
 
-    c := slow_path(3);            // Normal call.
-    d := inline slow_path(3);     // Inlined: overridden at call site.
+    c := heavy_compute(3);              // Normal call.
+    d := inline heavy_compute(3);       // Inlined: overridden at call site.
 }
     </code>
 </pre>
@@ -426,13 +405,13 @@ main :: () {
 
 <pre>
     <code>
-power :: (base: int, exp: int) -> int {
-    if exp == 0 return 1;
-    return base * power(base, exp - 1);
+factorial :: (n: int) -> int {
+    if n <= 1 return 1;
+    return n * factorial(n - 1);
 }
 
 main :: () {
-    print("2^10 = %\n", power(2, 10));   // 2^10 = 1024
+    print("10! = %\n", factorial(10));   // 10! = 3628800
 }
     </code>
 </pre>
@@ -445,14 +424,14 @@ main :: () {
 
 <pre>
     <code>
-countdown :: (n: int) {
+blast_off :: (n: int) {
     if n <= 0 return;
     print("% ", n);
     #this(n - 1);
 }
 
 main :: () {
-    countdown(5);   // 5 4 3 2 1
+    blast_off(5);   // 5 4 3 2 1
     print("#this is %\n", #this);   // prints the address of main
 }
     </code>
@@ -466,14 +445,14 @@ main :: () {
 
 <pre>
     <code>
-draw_circle :: (radius: float) {
-    print("radius: %\n", radius);
+set_opacity :: (level: float) {
+    print("opacity: %\n", level);
 }
 
 main :: () {
-    r: int = 10;
-    // draw_circle(r);      // Error: type mismatch.
-    draw_circle(xx r);      // OK: r is auto-cast to float.
+    val: int = 75;
+    // set_opacity(val);      // Error: type mismatch.
+    set_opacity(xx val);      // OK: val is auto-cast to float.
 }
     </code>
 </pre>
@@ -486,19 +465,19 @@ main :: () {
 
 <pre>
     <code>
-Entity :: struct {
+Actor :: struct {
     x, y: float;
-    name: string;
+    label: string;
 }
 
-move_right :: (using e: *Entity, amount: float) {
+nudge_right :: (using a: *Actor, amount: float) {
     x += amount;
-    print("% moved to x=%\n", name, x);
+    print("% moved to x=%\n", label, x);
 }
 
 main :: () {
-    player := Entity.{0, 0, "Player"};
-    move_right(*player, 5.0);   // Player moved to x=5
+    hero := Actor.{0, 0, "Hero"};
+    nudge_right(*hero, 5.0);   // Hero moved to x=5
 }
     </code>
 </pre>
@@ -511,17 +490,17 @@ main :: () {
 
 <pre>
     <code>
-old_save :: () #deprecated "Use save_to_disk() instead." {
+old_export :: () #deprecated "Use write_to_file() instead." {
     // ...
 }
 
-save_to_disk :: () {
+write_to_file :: () {
     // ...
 }
 
 main :: () {
-    old_save();
-    // Warning: This procedure is deprecated. Note: "Use save_to_disk() instead."
+    old_export();
+    // Warning: This procedure is deprecated. Note: "Use write_to_file() instead."
 }
     </code>
 </pre>
@@ -534,10 +513,10 @@ main :: () {
 
 <pre>
     <code>
-add :: (a: int, b: int) -> int { return a + b; }
+multiply :: (a: int, b: int) -> int { return a * b; }
 
 main :: () {
-    info := cast(*Type_Info_Procedure) type_info(type_of(add));
+    info := cast(*Type_Info_Procedure) type_info(type_of(multiply));
     print("kind: %\n", info.type);   // PROCEDURE
 
     print("arguments: ");
@@ -558,8 +537,8 @@ main :: () {
 
 <pre>
     <code>
-do_work :: () {
-    print("Inside %\n", #procedure_name());   // Inside do_work
+run_task :: () {
+    print("Inside %\n", #procedure_name());   // Inside run_task
 }
     </code>
 </pre>
