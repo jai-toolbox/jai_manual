@@ -9,12 +9,12 @@
     <code>
 #import "Hash_Table";
 
-scores: Table(string, int);
-table_add(*scores, "Alice", 95);
-table_add(*scores, "Bob",   82);
+inventory: Table(string, int);
+table_add(*inventory, "iron_ore", 64);
+table_add(*inventory, "oak_log",  32);
 
-value, success := table_find(*scores, "Alice");
-if success  print("Alice's score is %\n", value);  // 95
+success, value := table_find(*inventory, "iron_ore");
+if success  print("iron_ore count is %\n", value);  // 64
     </code>
 </pre>
 
@@ -26,25 +26,25 @@ if success  print("Alice's score is %\n", value);  // 95
 
 <pre>
     <code>
-table_add(*scores, "Carol", 91);       // Always inserts a new entry.
-table_set(*scores, "Alice", 97);       // Replaces Alice's existing score.
-table_set(*scores, "Dave",  88);       // Adds Dave, since he wasn't in the table.
+table_add(*inventory, "diamond", 3);         // Always inserts a new entry.
+table_set(*inventory, "iron_ore", 128);      // Replaces iron_ore's existing count.
+table_set(*inventory, "emerald", 7);         // Adds emerald, since it wasn't in the table.
     </code>
 </pre>
 
 <h2>Looking Up Values</h2>
 
 <p>
-    Use <code>table_find</code> to look up a key. It returns both the value and a <code>success</code> boolean. The <code>success</code> return is marked <code>#must</code>, so the compiler will error if you discard it. If <code>success</code> is <code>false</code>, the returned value is uninitialized and must not be used. Use <code>table_find_pointer</code> if you need a <a class="rlink" href="pointer.html#definition-pointer">pointer</a> to the value, for example to modify it in place. It returns <code>null</code> if the key is not found.
+    Use <code>table_find</code> to look up a key. It returns both a <code>success</code> boolean and the value. The <code>success</code> return is marked <code>#must</code>, so the compiler will error if you discard it. If <code>success</code> is <code>false</code>, the returned value is uninitialized and must not be used. Use <code>table_find_pointer</code> if you need a <a class="rlink" href="pointer.html#definition-pointer">pointer</a> to the value, for example to modify it in place. It returns <code>null</code> if the key is not found.
 </p>
 
 <pre>
     <code>
-value, success := table_find(*scores, "Alice");
-if success  print("Alice's score is %\n", value);
+success, value := table_find(*inventory, "iron_ore");
+if success  print("iron_ore count is %\n", value);
 
-ptr := table_find_pointer(*scores, "Bob");
-if ptr  ptr.* += 10;   // Give Bob 10 extra points.
+ptr := table_find_pointer(*inventory, "oak_log");
+if ptr  ptr.* += 16;   // Add 16 more oak logs.
     </code>
 </pre>
 
@@ -56,8 +56,8 @@ if ptr  ptr.* += 10;   // Give Bob 10 extra points.
 
 <pre>
     <code>
-if table_contains(*scores, "Carol") {
-    print("Carol is in the table.\n");
+if table_contains(*inventory, "diamond") {
+    print("We have diamonds.\n");
 }
     </code>
 </pre>
@@ -70,8 +70,8 @@ if table_contains(*scores, "Carol") {
 
 <pre>
     <code>
-success, removed_value := table_remove(*scores, "Bob");
-if success  print("Removed Bob with score %\n", removed_value);
+success, removed_value := table_remove(*inventory, "oak_log");
+if success  print("Removed oak_log with count %\n", removed_value);
     </code>
 </pre>
 
@@ -83,8 +83,8 @@ if success  print("Removed Bob with score %\n", removed_value);
 
 <pre>
     <code>
-entry, newly_added := find_or_add(*scores, "Eve");
-if newly_added  entry.* = 75;
+entry, newly_added := find_or_add(*inventory, "gold_ingot");
+if newly_added  entry.* = 10;
     </code>
 </pre>
 
@@ -96,8 +96,8 @@ if newly_added  entry.* = 75;
 
 <pre>
     <code>
-for scores {
-    print("% has score %\n", it_index, it);
+for inventory {
+    print("% has count %\n", it_index, it);
 }
     </code>
 </pre>
@@ -108,9 +108,9 @@ for scores {
 
 <pre>
     <code>
-for scores {
-    key, value := it_index, it;
-    print("% has score %\n", key, value);
+for inventory {
+    item, count := it_index, it;
+    print("% has count %\n", item, count);
 }
     </code>
 </pre>
@@ -121,12 +121,12 @@ for scores {
 
 <pre>
     <code>
-for * scores {
-    it.* += 5;   // Give everyone 5 bonus points.
+for * inventory {
+    it.* += 1;   // Add one of every item.
 }
 
-for scores {
-    if it < 60  remove it;   // Remove all failing scores.
+for inventory {
+    if it < 5  remove it;   // Remove items with fewer than 5 in stock.
 }
     </code>
 </pre>
@@ -137,8 +137,8 @@ for scores {
 
 <pre>
     <code>
-for value, key : scores {
-    print("% has score %\n", key, value);
+for count, item : inventory {
+    print("% has count %\n", item, count);
 }
     </code>
 </pre>
@@ -149,9 +149,9 @@ for value, key : scores {
 
 <pre>
     <code>
-for * entry, key : scores {
-    print("Boosting %'s score\n", key);
-    entry.* += 5;   // Give everyone 5 bonus points.
+for * qty, item : inventory {
+    print("Restocking %\n", item);
+    qty.* += 10;   // Restock 10 of every item.
 }
     </code>
 </pre>
@@ -162,12 +162,12 @@ for * entry, key : scores {
 
 <pre>
     <code>
-for * scores {
-    it.* += 5;   // Give everyone 5 bonus points.
+for * inventory {
+    it.* += 1;   // Add one of every item.
 }
 
-for scores {
-    if it < 60  remove it;   // Remove all failing scores.
+for inventory {
+    if it < 5  remove it;   // Remove items with fewer than 5 in stock.
 }
     </code>
 </pre>
@@ -180,7 +180,7 @@ for scores {
 
 <pre>
     <code>
-table_reset(*scores);   // count is now 0, memory still allocated.
-deinit(*scores);        // All memory freed.
+table_reset(*inventory);   // count is now 0, memory still allocated.
+deinit(*inventory);        // All memory freed.
     </code>
 </pre>
