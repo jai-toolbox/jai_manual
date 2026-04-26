@@ -7,11 +7,11 @@
 
 <pre>
     <code>
-Person :: struct {
-    name:         string;
-    year_born:    int;
-    month_born:   int;
-    day_born:     int;
+Planet :: struct {
+    name:           string;
+    orbit_radius:   int;
+    num_moons:      int;
+    ring_count:     int;
 }
     </code>
 </pre>
@@ -24,22 +24,22 @@ Person :: struct {
 
 <pre>
     <code>
-Rectangle :: struct {
-    x0: float;
-    y0: float;
-    x1: float;
-    y1: float;
-    color_name: string;
+Bounding_Box :: struct {
+    min_x: float;
+    min_y: float;
+    max_x: float;
+    max_y: float;
+    label: string;
 }
 
-r: Rectangle;          // All members initialized to their default values (0, "").
-r.x0 = 10;
-r.y0 = 5;
-r.x1 = 50;
-r.y1 = 55;
-r.color_name = "chartreuse";
+b: Bounding_Box;          // All members initialized to their default values (0, "").
+b.min_x = 10;
+b.min_y = 5;
+b.max_x = 50;
+b.max_y = 55;
+b.label = "hitbox";
 
-print("r is: %\n", r);
+print("b is: %\n", b);
     </code>
 </pre>
 
@@ -51,8 +51,8 @@ print("r is: %\n", r);
 
 <pre>
     <code>
-Vector3 :: struct {
-    x, y, z: float;
+Color :: struct {
+    r, g, b: float;
 }
     </code>
 </pre>
@@ -65,16 +65,16 @@ Vector3 :: struct {
 
 <pre>
     <code>
-Ice_Cream_Info :: struct {
-    temperature   := -10.0;
-    flavor        := "vanilla";
-    num_scoops    := 2;
-    cone_style    := "waffle";
-    add_sprinkles := false;
+Spaceship :: struct {
+    fuel_level    := 85.0;
+    model         := "falcon";
+    num_engines   := 4;
+    hull_type     := "titanium";
+    has_shields   := false;
 }
 
-serving: Ice_Cream_Info;  // Gets all the defaults.
-print("serving is: %\n", serving);
+craft: Spaceship;  // Gets all the defaults.
+print("craft is: %\n", craft);
     </code>
 </pre>
 
@@ -84,16 +84,16 @@ print("serving is: %\n", serving);
 
 <pre>
     <code>
-Ice_Cream_Store_Display :: struct {
-    brightness: float;
+Hangar_Display :: struct {
+    luminance: float;
 
-    info: Ice_Cream_Info;
-    info.flavor = "chocolate";  // Override just the flavor, keep other defaults.
+    ship: Spaceship;
+    ship.model = "interceptor";  // Override just the model, keep other defaults.
 
-    position: Vector3;
-    position.z = 1.5;          // Raise up the display in Z.
+    tint: Color;
+    tint.b = 1.5;               // Boost the blue channel.
 
-    brightness = 101.2;
+    luminance = 101.2;
 }
     </code>
 </pre>
@@ -106,10 +106,10 @@ Ice_Cream_Store_Display :: struct {
 
 <pre>
     <code>
-Line_Segment :: struct {
-    start: Vector3;
-    end:   Vector3;
-    color: string;
+Gradient :: struct {
+    start: Color;
+    end:   Color;
+    name:  string;
 }
     </code>
 </pre>
@@ -122,8 +122,8 @@ Line_Segment :: struct {
 
 <pre>
     <code>
-s := r;  // A simple memory copy of r into s.
-print("s is: %\n", s);
+c := b;  // A simple memory copy of b into c.
+print("c is: %\n", c);
     </code>
 </pre>
 
@@ -135,22 +135,22 @@ print("s is: %\n", s);
 
 <pre>
     <code>
-print("size_of(Rectangle) = %\n", size_of(Rectangle));
+print("size_of(Bounding_Box) = %\n", size_of(Bounding_Box));
 
 // size_of takes a Type, not a value. If you have a value, use type_of:
-print("size_of(type_of(r)) = %\n", size_of(type_of(r)));
+print("size_of(type_of(b)) = %\n", size_of(type_of(b)));
     </code>
 </pre>
 
 <p>
-    The address-of operator <code>*</code> gives you the <a class="rlink" href="pointer.html#definition-memory-address">memory address</a> of a value. For a struct, <code>*r</code> is the address where the struct begins, and <code>*r.x0</code> is the address of the first field:
+    The address-of operator <code>*</code> gives you the <a class="rlink" href="pointer.html#definition-memory-address">memory address</a> of a value. For a struct, <code>*b</code> is the address where the struct begins, and <code>*b.min_x</code> is the address of the first field:
 </p>
 
 <pre>
     <code>
-print("The base of r is %\n", *r);
-print("The address of r.x0 is %\n", *r.x0);  // Same as *r, since x0 is the first field.
-print("The address of r.x1 is %\n", *r.x1);
+print("The base of b is %\n", *b);
+print("The address of b.min_x is %\n", *b.min_x);  // Same as *b, since min_x is the first field.
+print("The address of b.max_x is %\n", *b.max_x);
     </code>
 </pre>
 
@@ -168,8 +168,8 @@ print("The address of r.x1 is %\n", *r.x1);
 
 <pre>
     <code>
-order := Ice_Cream_Info.{flavor = "chocolate", num_scoops = 3};
-print("order is: %\n", order);
+loadout := Spaceship.{model = "interceptor", num_engines = 6};
+print("loadout is: %\n", loadout);
     </code>
 </pre>
 
@@ -179,16 +179,16 @@ print("order is: %\n", order);
 
 <pre>
     <code>
-order2: Ice_Cream_Info;
-order2 = .{flavor = "strawberry", num_scoops = 1};
+loadout2: Spaceship;
+loadout2 = .{model = "cruiser", num_engines = 12};
 
 // Works in procedure calls too:
-check_temperature :: (info: Ice_Cream_Info) { /* ... */ }
-check_temperature(.{num_scoops = 4, add_sprinkles = true});
+run_diagnostics :: (ship: Spaceship) { /* ... */ }
+run_diagnostics(.{num_engines = 8, has_shields = true});
 
 // And in return statements:
-parse_order :: (s: string) -> (bool, Ice_Cream_Info) {
-    if s == "special" return true, .{flavor = "neapolitan", num_scoops = 17};
+parse_config :: (s: string) -> (bool, Spaceship) {
+    if s == "heavy" return true, .{model = "dreadnought", num_engines = 24};
     return false, .{};  // .{} gives the default.
 }
     </code>
@@ -200,13 +200,13 @@ parse_order :: (s: string) -> (bool, Ice_Cream_Info) {
 
 <pre>
     <code>
-Body :: struct {
+Payload :: struct {
     using header: Header;
-    values: [3] int;
-    postscript := "Bye.";
+    readings: [3] int;
+    footer := "End.";
 }
 
-body := Body.{name = "Ginger", values[1] = 7};
+payload := Payload.{name = "Sensor_A", readings[1] = 7};
     </code>
 </pre>
 
@@ -218,8 +218,8 @@ body := Body.{name = "Ginger", values[1] = 7};
 
 <pre>
     <code>
-a := Vector3.{1, 2, 3};
-b: Vector3 = .{0, 0, 1};
+a := Color.{0.2, 0.5, 0.9};
+b: Color = .{0, 0, 1};
     </code>
 </pre>
 
@@ -237,8 +237,8 @@ b: Vector3 = .{0, 0, 1};
     <code>
 check :: (s: $T) { /* ... */ }
 
-// check(.{num_scoops = 4});                        // Error: type unknown.
-check(Ice_Cream_Info.{num_scoops = 4});              // Works.
+// check(.{num_engines = 8});                        // Error: type unknown.
+check(Spaceship.{num_engines = 8});                   // Works.
     </code>
 </pre>
 
@@ -252,8 +252,8 @@ check(Ice_Cream_Info.{num_scoops = 4});              // Works.
     <code>
 R22 :: 0.7071068;
 
-result_1 := is_constant(Vector3.{R22, R22, 0});         // true: all values are constants.
-result_2 := is_constant(Vector3.{1 - R22*R22, 0, 0});   // true: math between constants is constant.
+result_1 := is_constant(Color.{R22, R22, 0});         // true: all values are constants.
+result_2 := is_constant(Color.{1 - R22*R22, 0, 0});   // true: math between constants is constant.
     </code>
 </pre>
 
@@ -266,16 +266,16 @@ result_2 := is_constant(Vector3.{1 - R22*R22, 0, 0});   // true: math between co
 <pre>
     <code>
 {
-    using display;
+    using hangar;
 
-    brightness = 375.4;         // Same as display.brightness = 375.4
-    info.flavor = "strawberry"; // Same as display.info.flavor = "strawberry"
-    position.x = 1;
+    luminance = 375.4;           // Same as hangar.luminance = 375.4
+    ship.model = "cruiser";      // Same as hangar.ship.model = "cruiser"
+    tint.r = 1;
 
-    using position;
-    x += 1;  // Same as display.position.x += 1
-    y = -3;
-    z *= 4;
+    using tint;
+    r += 1;  // Same as hangar.tint.r += 1
+    g = -3;
+    b *= 4;
 }
     </code>
 </pre>
@@ -292,6 +292,6 @@ result_2 := is_constant(Vector3.{1 - R22*R22, 0, 0});   // true: math between co
 
 <pre>
     <code>
-r: Vector3 = ---;  // r's fields contain whatever was in memory. No initialization.
+c: Color = ---;  // c's fields contain whatever was in memory. No initialization.
     </code>
 </pre>
