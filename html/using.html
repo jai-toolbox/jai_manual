@@ -1,24 +1,24 @@
 <h2>using a value</h2>
 
 <p>
-    The most basic use of <code>using</code> is to bring the fields of a <a class="rlink" href="struct.html#definition-struct">struct</a> variable into the current <a class="rlink" href="compilation.html#definition-scope">scope</a>. After <code>using</code>, you can refer to the struct's fields as if they were local variables:
+    The most basic use of <code>using</code> is to bring the fields of a struct variable into the current scope. After <code>using</code>, you can refer to the struct's fields as if they were local variables:
 </p>
 
 <pre>
     <code>
-Ice_Cream :: struct {
-    temperature   := -10.0;
-    flavor        := "vanilla";
-    num_scoops    := 2;
-    cone_style    := "waffle";
-    add_sprinkles := false;
+Spaceship :: struct {
+    fuel_level    := 85.0;
+    model         := "falcon";
+    num_engines   := 4;
+    hull_type     := "titanium";
+    has_shields   := false;
 }
 
-cream: Ice_Cream;
-using cream;
+ship: Spaceship;
+using ship;
 
-num_scoops = 5;                       // Same as cream.num_scoops = 5
-flavor = "peppermint";                // Same as cream.flavor = "peppermint"
+num_engines = 6;                        // Same as ship.num_engines = 6
+model = "interceptor";                  // Same as ship.model = "interceptor"
     </code>
 </pre>
 
@@ -28,10 +28,10 @@ flavor = "peppermint";                // Same as cream.flavor = "peppermint"
 
 <pre>
     <code>
-cream.temperature = -20;
-temperature = -30;                    // Overwrites the value set on the line above.
-print("%\n", cream.temperature);     // -30
-print("%\n", temperature);           // -30
+ship.fuel_level = 50;
+fuel_level = 30;                         // Overwrites the value set on the line above.
+print("%\n", ship.fuel_level);          // 30
+print("%\n", fuel_level);              // 30
     </code>
 </pre>
 
@@ -41,14 +41,14 @@ print("%\n", temperature);           // -30
 
 <pre>
     <code>
-other: Ice_Cream;
+other: Spaceship;
 {
     using other;
-    temperature = 20;
-    flavor      = "cinnamon";
-    num_scoops  = 37;
+    fuel_level  = 100;
+    model       = "cruiser";
+    num_engines = 12;
 }
-// temperature, flavor, etc. are no longer in scope here.
+// fuel_level, model, etc. are no longer in scope here.
     </code>
 </pre>
 
@@ -58,8 +58,8 @@ other: Ice_Cream;
 
 <pre>
     <code>
-using cream: Ice_Cream;
-print("flavor is %, % scoops.\n", flavor, num_scoops);
+using ship: Spaceship;
+print("model is %, % engines.\n", model, num_engines);
     </code>
 </pre>
 
@@ -69,43 +69,43 @@ print("flavor is %, % scoops.\n", flavor, num_scoops);
 
 <pre>
     <code>
-Fruits :: enum {
-    BANANA;
-    APPLE;
-    WATERMELON;
+Planets :: enum {
+    MARS;
+    VENUS;
+    JUPITER;
 }
 
-using Fruits;
-x := BANANA;       // Same as Fruits.BANANA
+using Planets;
+x := MARS;       // Same as Planets.MARS
     </code>
 </pre>
 
 <h2>using a pointer</h2>
 
 <p>
-    <code>using</code> works on <a class="rlink" href="pointer.html#definition-pointer">pointers</a> to structs just as it does on values. The fields are accessed through the pointer transparently:
+    <code>using</code> works on pointers to structs just as it does on values. The fields are accessed through the pointer transparently:
 </p>
 
 <pre>
     <code>
-make_ice_cream :: () -> *Ice_Cream {
-    result := New(Ice_Cream);
+build_spaceship :: () -> *Spaceship {
+    result := New(Spaceship);
     return result;
 }
 
-using cream := make_ice_cream();
-print("type_of(cream) is %\n", type_of(cream));  // *Ice_Cream
+using ship := build_spaceship();
+print("type_of(ship) is %\n", type_of(ship));  // *Spaceship
 
-num_scoops *= 2;
-num_scoops += 1;
-print("scoops: %\n", num_scoops);
+num_engines *= 2;
+num_engines += 1;
+print("engines: %\n", num_engines);
     </code>
 </pre>
 
 <h2>using an import</h2>
 
 <p>
-    When you bind an <a class="rlink" href="compilation.html#definition-import"><code>#import</code></a> to a name, the module's exported identifiers are accessed through that name. You can apply <code>using</code> to make those identifiers available directly:
+    When you bind an <code>#import</code> to a name, the module's exported identifiers are accessed through that name. You can apply <code>using</code> to make those identifiers available directly:
 </p>
 
 <pre>
@@ -159,57 +159,57 @@ do_stuff :: () {
 
 <pre>
     <code>
-make_much_better :: (using cream: *Ice_Cream) {
-    num_scoops *= 3;                          // Same as cream.num_scoops *= 3
-    add_sprinkles = true;
-    flavor = sprint("% with cinnamon", flavor);
+upgrade_spaceship :: (using ship: *Spaceship) {
+    num_engines *= 3;                              // Same as ship.num_engines *= 3
+    has_shields = true;
+    model = sprint("% mark II", model);
 }
 
-cream: Ice_Cream;
-make_much_better(*cream);
-print("cream is: %\n", cream);
+ship: Spaceship;
+upgrade_spaceship(*ship);
+print("ship is: %\n", ship);
     </code>
 </pre>
 
 <h2>using in a struct</h2>
 
 <p>
-    Inside a <a class="rlink" href="struct.html#definition-struct">struct</a> declaration, <code>using</code> on a field promotes that field's members into the parent struct's <a class="rlink" href="namespace.html#definition-namespace">namespace</a>. This allows you to access the inner struct's fields directly through the outer struct:
+    Inside a struct declaration, <code>using</code> on a field promotes that field's members into the parent struct's namespace. This allows you to access the inner struct's fields directly through the outer struct:
 </p>
 
 <pre>
     <code>
-Vector3 :: struct {
+Coordinate :: struct {
     x, y, z: float;
 }
 
-Entity :: struct {
-    using position: Vector3;
+Unit :: struct {
+    using location: Coordinate;
     id: s64;
 }
 
-Dog :: struct {
-    using entity: Entity;
-    name: string;
-    weight_in_pounds: float;
+Robot :: struct {
+    using unit: Unit;
+    serial_code: string;
+    weight_in_kg: float;
 }
 
-dog: Dog;
-dog.id = 1337;             // Same as dog.entity.id
-dog.x = 3;                 // Same as dog.entity.position.x
-dog.y = 9;                 // Same as dog.entity.position.y
+bot: Robot;
+bot.id = 1337;              // Same as bot.unit.id
+bot.x = 3;                  // Same as bot.unit.location.x
+bot.y = 9;                  // Same as bot.unit.location.y
     </code>
 </pre>
 
 <p>
-    The <code>using</code> is multi-level: <code>Dog</code> uses <code>Entity</code>, and <code>Entity</code> uses <code>Vector3</code>, so <code>x</code>, <code>y</code>, and <code>z</code> are all accessible directly from a <code>Dog</code>. All of the following refer to the same data:
+    The <code>using</code> is multi-level: <code>Robot</code> uses <code>Unit</code>, and <code>Unit</code> uses <code>Coordinate</code>, so <code>x</code>, <code>y</code>, and <code>z</code> are all accessible directly from a <code>Robot</code>. All of the following refer to the same data:
 </p>
 
 <pre>
     <code>
-print("%\n", dog.position);                    // The Vector3
-print("%\n", dog.entity.position);             // Same thing
-print("%, %, %\n", dog.x, dog.y, dog.z);      // Same fields, accessed directly
+print("%\n", bot.location);                     // The Coordinate
+print("%\n", bot.unit.location);                 // Same thing
+print("%, %, %\n", bot.x, bot.y, bot.z);        // Same fields, accessed directly
     </code>
 </pre>
 
@@ -230,21 +230,21 @@ print("%, %, %\n", dog.x, dog.y, dog.z);      // Same fields, accessed directly
 
 <pre>
     <code>
-Person :: struct {
-    name: string;
+Vehicle :: struct {
+    make: string;
 }
 
-Employee :: struct {
-    using #as p: Person;
-    profession: string;
+Truck :: struct {
+    using #as v: Vehicle;
+    payload_capacity: float;
 }
 
-emp: Employee;
-emp.name = "Gates";
+t: Truck;
+t.make = "Ford";
 
-p: Person;
-p = emp;    // Implicit cast from Employee to Person, enabled by #as.
-print("%\n", p);  // {"Gates"}
+v: Vehicle;
+v = t;    // Implicit cast from Truck to Vehicle, enabled by #as.
+print("%\n", v);  // {"Ford"}
     </code>
 </pre>
 
@@ -254,16 +254,16 @@ print("%\n", p);  // {"Gates"}
 
 <pre>
     <code>
-Patient :: struct {
-    using pe: Person;    // No #as
-    disease: string;
+Motorcycle :: struct {
+    using ve: Vehicle;    // No #as
+    top_speed: float;
 }
 
-pat: Patient;
-pat.name = "Johnson";   // Field access works fine.
+moto: Motorcycle;
+moto.make = "Ducati";    // Field access works fine.
 
-p: Person;
-// p = pat;             // Error: Type mismatch. #as is required for this cast.
+v: Vehicle;
+// v = moto;             // Error: Type mismatch. #as is required for this cast.
     </code>
 </pre>
 
@@ -275,12 +275,12 @@ p: Person;
 
 <pre>
     <code>
-Soda :: struct {
-    flavor := "Root Beer";
+Helicopter :: struct {
+    model := "Apache";
 }
 
-using cream: Ice_Cream;
-// using soda: Soda;        // Error: 'flavor' is already declared (from cream).
+using ship: Spaceship;
+// using heli: Helicopter;     // Error: 'model' is already declared (from ship).
     </code>
 </pre>
 
@@ -290,7 +290,7 @@ using cream: Ice_Cream;
 
 <pre>
     <code>
-// using other: Ice_Cream;  // Error: all field names collide with cream.
+// using other: Spaceship;    // Error: all field names collide with ship.
     </code>
 </pre>
 
@@ -302,8 +302,8 @@ using cream: Ice_Cream;
 
 <pre>
     <code>
-using,except(flavor) soda: Soda;   // Everything except 'flavor' is imported.
-// flavor still accessible as soda.flavor
+using,except(model) heli: Helicopter;   // Everything except 'model' is imported.
+// model still accessible as heli.model
     </code>
 </pre>
 
@@ -319,6 +319,6 @@ using,except(flavor) soda: Soda;   // Everything except 'flavor' is imported.
 
 <pre>
     <code>
-using,only(w, y) orientation: Quaternion;   // Only w and y are promoted.
+using,only(pitch, yaw) rotation: Gyroscope;   // Only pitch and yaw are promoted.
     </code>
 </pre>
