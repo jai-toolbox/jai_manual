@@ -505,6 +505,112 @@ main :: () {
     </code>
 </pre>
 
+<h2>Polymorphic Procedures</h2>
+
+<p>
+    A procedure can be made generic by marking one or more of its arguments with <code>$</code>. This tells the compiler to capture information from the call site, such as a type or a constant value, and use it elsewhere in the procedure's signature or body. The procedure is then specialized for each unique combination of captured values.
+</p>
+
+<pre>
+    <code>
+identity :: (x: $T) -> T {
+    return x;
+}
+
+main :: () {
+    a := identity(42);        // T is captured as s64.
+    b := identity("hello");   // T is captured as string.
+    c := identity(3.14);      // T is captured as float.
+}
+    </code>
+</pre>
+
+<p>
+    Here <code>$T</code> on the first argument captures the type of whatever is passed in, and the same <code>T</code> is then reused as the return type. The compiler generates a separate version of <code>identity</code> for each distinct type it is called with.
+</p>
+
+<p>
+    The same mechanism works for capturing values, not just types. This is most often used to capture array sizes:
+</p>
+
+<pre>
+    <code>
+sum_array :: (values: [$N] int) -> int {
+    total := 0;
+    for values total += it;
+    return total;
+}
+
+main :: () {
+    nums := int.[10, 20, 30, 40];
+    print("sum is %\n", sum_array(nums));   // sum is 100
+}
+    </code>
+</pre>
+
+<h2>Accepting Polymorphic Structs</h2>
+
+<p>
+    Procedures often need to accept a <a class="rlink" href="struct.html#definition-polymorphic-struct">polymorphic struct</a>. Because a polymorphic struct is not itself a type but a blueprint, there are several syntaxes for writing such a procedure, each with a different level of strictness.
+</p>
+
+<h3>Implicit Polymorphism</h3>
+
+<p>
+    The simplest form is to write the bare blueprint name as the argument type, with no <code>$</code> and no parameter list. The compiler infers the parameters from the call site, and you access them through the argument using dot syntax:
+</p>
+
+<pre>
+    <code>
+Box :: struct (T: Type, N: int) {
+    items: [N] T;
+}
+
+first_item :: (b: Box) -> b.T {
+    return b.items[0];
+}
+
+main :: () {
+    b: Box(int, 4);
+    b.items[0] = 99;
+    print("first is %\n", first_item(b));   // first is 99
+}
+    </code>
+</pre>
+
+<p>
+    This is the most concise form and is preferred when the procedure simply needs to read or pass through the parameters without binding them to its own names.
+</p>
+
+<h3>Capturing Parameters Explicitly</h3>
+
+<p>
+    If you need to refer to the captured parameters by name elsewhere in the signature, list them with <code>$</code> in the argument's parameter list:
+</p>
+
+<pre>
+    <code>
+fill :: (b: *Box($T, $N), value: T) {
+    for 0..N-1 b.items[it] = value;
+}
+
+main :: () {
+    b: Box(float, 3);
+    fill(*b, 1.5);
+    print("b is %\n", b);   // b is {[1.5, 1.5, 1.5]}
+}
+    </code>
+</pre>
+
+<p>
+    Here <code>$T</code> and <code>$N</code> are bound to the corresponding parameters of the passed-in <code>Box</code>, and they can then be used as the type of <code>value</code> and as a loop bound.
+</p>
+
+<h3>The $T/Base Syntax</h3>
+
+<p>
+    Sometimes you want a procedure to accept any struct that <em>is</em> a particular polymorphic struct, or that <em>contains</em> one through <span class="ml-2" /><span class="inline-block w-3 h-3 rounded-full bg-neutral-a12 align-middle mb-[0.1rem]" />
+
 <h2>Reflection on Procedures</h2>
 
 <p>
