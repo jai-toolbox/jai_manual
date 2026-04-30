@@ -295,3 +295,162 @@ result_2 := is_constant(Color.{1 - R22*R22, 0, 0});   // true: math between cons
 c: Color = ---;  // c's fields contain whatever was in memory. No initialization.
     </code>
 </pre>
+
+
+
+<div class="definition" id="definition-polymorphic-struct">
+    <h2 class="line-text">Polymorphic Struct</h2>
+    <p>
+        A polymorphic struct is a struct parameterized by one or more <a class="rlink" href="compilation.html#definition-compile-time">compile-time</a> constants, usually <a class="rlink" href="type.html">types</a> or sizes. It is not itself a usable type but a blueprint: supplying concrete values for its parameters produces a distinct, fully formed struct type. Each unique combination of arguments yields a different type, and the parameters become accessible as members on both the type and its instances.
+    </p>
+</div>
+
+<pre>
+    <code>
+Buffer :: struct (T: Type, N: int) {
+    items:  [N] T;
+    cursor: int;
+}
+    </code>
+</pre>
+
+<p>
+    The parameters appear in parentheses after the <code>struct</code> keyword. They are always compile-time constants, so the leading <code>$</code> that you see on polymorphic procedure parameters is not required here, although it is allowed. The parameters can be used inside the struct body as field types, array sizes, or anywhere else a constant of their kind is expected.
+</p>
+
+<h3>Instantiating a Polymorphic Struct</h3>
+
+<p>
+    To create a usable type from a polymorphic struct, supply its arguments in parentheses:
+</p>
+
+<pre>
+    <code>
+Small_Buffer :: Buffer(float, 8);      // T becomes float, N becomes 8.
+Large_Buffer :: Buffer(int, 4096);     // T becomes int,   N becomes 4096.
+
+a: Small_Buffer;
+b: Large_Buffer;
+    </code>
+</pre>
+
+<p>
+    Each unique combination of parameters produces a different type. <code>Buffer(float, 8)</code> and <code>Buffer(float, 16)</code> are not interchangeable, even though they share the same blueprint.
+</p>
+
+<h3>Default Values for Parameters</h3>
+
+<p>
+    Polymorphic struct parameters can have default values, just like procedure parameters:
+</p>
+
+<pre>
+    <code>
+Grid :: struct (Cell: Type, Width: int = 10, Height: int = 10) {
+    cells: [Width][Height] Cell;
+}
+
+g: Grid(int);             // Width and Height default to 10.
+h: Grid(float, 32, 32);   // All three explicitly specified.
+    </code>
+</pre>
+
+<h3>Accessing Parameters as Members</h3>
+
+<p>
+    A useful property of polymorphic structs is that their parameters become accessible on instances and on the type itself, using the same dot syntax you use for fields:
+</p>
+
+<pre>
+    <code>
+g: Grid(int, 5, 8);
+
+print("Cell type is %\n", g.Cell);                    // => Cell type is s64
+print("Dimensions are % by %\n", g.Width, g.Height);  // => 5 by 8
+    </code>
+</pre>
+
+<p>
+    This works because the parameters are part of the concrete type. The compiler treats <code>Grid(int, 5, 8)</code> as a fully formed type whose name carries those values along with it.
+</p>
+
+<h3>Comparing Polymorphic Types</h3>
+
+<p>
+    When comparing types, the comparison must include the parameters. The bare blueprint name is not itself a type:
+</p>
+
+<pre>
+    <code>
+g: Grid(int, 5, 8);
+
+assert(type_of(g) == Grid(int, 5, 8));   // Works: full instantiation.
+assert(g.Cell == int);                   // Works: parameter access.
+// assert(type_of(g) == Grid);           // Error: Grid alone is not a type.
+    </code>
+</pre>
+
+<h3>Partial Instantiation with #bake_arguments</h3>
+
+<p>
+    You can fix some parameters of a polymorphic struct ahead of time and leave the rest open with <code>#bake_arguments</code>. This produces a new polymorphic blueprint with fewer remaining parameters:
+</p>
+
+<pre>
+    <code>
+Square_Grid :: #bake_arguments Grid(Width = 16, Height = 16);
+
+inventory: Square_Grid(Cell = string);   // Only Cell still needs to be supplied.
+    </code>
+</pre>
+
+<h3>A Recursive Example</h3>
+
+<p>
+    Polymorphic structs are particularly useful when defining generic data structures. A doubly linked list can be written so that the element type is chosen at the point of use:
+</p>
+
+<pre>
+    <code>
+List :: struct (T: Type) {
+    head: *Node(T);
+    tail: *Node(T);
+}
+
+Node :: struct (T: Type) {
+    value: T;
+    prev:  *Node(T);
+    next:  *Node(T);
+}
+
+// Each instantiation gives a distinct, fully typed list.
+numbers: List(int);
+words:   List(string);
+    </code>
+</pre>
+
+<p>
+    Without polymorphism you would need to write a separate <code>List</code> and <code>Node</code> for every element type, or fall back to storing untyped pointers and casting. Polymorphic structs let the compiler generate the specialized versions for you.
+</p>
+
+<h3>Initialization and Literals</h3>
+
+<p>
+    Once a polymorphic struct has been instantiated, it behaves like any other struct. You can declare values, assign defaults, and use struct literals exactly as before:
+</p>
+
+<pre>
+    <code>
+Pair :: struct (A: Type, B: Type) {
+    first:  A;
+    second: B;
+}
+
+p1 := Pair(int, string).{42, "hello"};
+p2: Pair(float, float) = .{1.5, 2.5};
+    </code>
+</pre>
+
+<p>
+    Note that when using a positional struct literal, you must spell out the full instantiated type, since the parameters are part of the type's identity.
+</p>
