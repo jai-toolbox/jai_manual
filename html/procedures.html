@@ -609,8 +609,78 @@ main :: () {
 <h3>The $T/Base Syntax</h3>
 
 <p>
-    Sometimes you want a procedure to accept any struct that <em>is</em> a particular polymorphic struct, or that <em>contains</em> one through <span class="ml-2" /><span class="inline-block w-3 h-3 rounded-full bg-neutral-a12 align-middle mb-[0.1rem]" />
+    Sometimes you want a procedure to accept any struct that <em>is</em> a particular polymorphic struct, or that <em>contains</em> one through <code>using</code>. The <code>$T/Base</code> syntax does exactly that: it binds <code>T</code> to the full type of the argument, while requiring that the argument either be an instance of <code>Base</code> or have one embedded in it.
+</p>
 
+<pre>
+    <code>
+describe :: (b: $T/Box) {
+    print("type is %, holds % items of type %\n", T, b.N, b.T);
+}
+
+Tagged_Box :: struct {
+    using inner: Box(string, 2);
+    label: string;
+}
+
+main :: () {
+    a: Box(int, 5);
+    describe(a);          // type is Box(T=s64, N=5)...
+
+    t: Tagged_Box;
+    describe(t);          // type is Tagged_Box, holds 2 items of type string
+}
+    </code>
+</pre>
+
+<p>
+    Without the <code>/Box</code> constraint, the procedure would accept any type at all. With it, only types that are or contain a <code>Box</code> are allowed.
+</p>
+
+<h3>The $T/interface Syntax</h3>
+
+<p>
+    A looser form of constraint accepts any struct that has the same fields as a given reference struct, regardless of whether it is related to that struct by composition. This is similar to traits or interfaces in other languages and provides a form of structural typing:
+</p>
+
+<pre>
+    <code>
+Named :: struct {
+    name: string;
+}
+
+greet :: (x: $T/interface Named) {
+    print("Hello, %\n", x.name);
+}
+
+Player :: struct {
+    name:  string;
+    score: int;
+}
+
+main :: () {
+    p := Player.{name = "Ada", score = 1200};
+    greet(p);   // Hello, Ada
+}
+    </code>
+</pre>
+
+<p>
+    <code>Player</code> has no relationship to <code>Named</code>, but because it has a field called <code>name</code> of the same type, it satisfies the interface and is accepted.
+</p>
+
+<h3>Choosing a Form</h3>
+
+<p>
+    The four forms shade into one another. As a rough guide:
+</p>
+
+<ul>
+    <li>Use <strong>implicit polymorphism</strong> (<code>b: Box</code>) when you only need to read the parameters via dot syntax.</li>
+    <li>Use <strong>explicit capture</strong> (<code>b: Box($T, $N)</code>) when you need to refer to the parameters by name in the rest of the signature.</li>
+    <li>Use <strong>$T/Base</strong> when you want to also accept structs that embed the polymorphic struct via <code>using</code>.</li>
+    <li>Use <strong>$T/interface</strong> when you want to accept any struct shaped like a given reference, with no requirement that it contain that reference.</li>
+</ul>
 <h2>Reflection on Procedures</h2>
 
 <p>
