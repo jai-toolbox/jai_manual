@@ -606,6 +606,63 @@ main :: () {
     Here <code>$T</code> and <code>$N</code> are bound to the corresponding parameters of the passed-in <code>Box</code>, and they can then be used as the type of <code>value</code> and as a loop bound.
 </p>
 
+<h3>Partial Matching: Mixing Concrete and Polymorphic Parameters</h3>
+
+<p>
+    You don't have to make every parameter of a polymorphic struct generic. You can fix some parameters to concrete values and leave others open with <code>$</code>, in any combination. The rule is straightforward: anything marked with <code>$</code> is captured from the call site, and anything without <code>$</code> is a concrete value that the argument's type must match exactly.
+</p>
+
+<pre>
+    <code>
+Box :: struct (T: Type, N: int) {
+    items: [N] T;
+}
+
+// Accepts any Box where N is exactly 2; T is inferred.
+proc_pair :: (b: Box($T, 2)) {
+    print("A Box of 2 items of type %\n", T);
+}
+
+// Accepts any Box of ints; N is inferred.
+proc_ints :: (b: Box(int, $N)) {
+    print("A Box of % ints\n", N);
+}
+
+// Accepts only Box(int, 2). Not polymorphic at all.
+proc_exact :: (b: Box(int, 2)) {
+    print("Exactly Box(int, 2)\n");
+}
+    </code>
+</pre>
+
+<p>
+    The compiler matches each call against the signature, accepting only arguments whose type fits the pattern:
+</p>
+
+<pre>
+    <code>
+a: Box(float, 2);
+b: Box(int, 5);
+c: Box(int, 2);
+
+proc_pair(a);     // OK: T inferred as float.
+proc_pair(c);     // OK: T inferred as int.
+// proc_pair(b); // Error: N is 5, not 2.
+
+proc_ints(b);     // OK: N inferred as 5.
+proc_ints(c);     // OK: N inferred as 2.
+// proc_ints(a); // Error: T is float, not int.
+
+proc_exact(c);    // OK.
+// proc_exact(a); // Error: wrong T.
+// proc_exact(b); // Error: wrong N.
+    </code>
+</pre>
+
+<p>
+    This is distinct from <code>#bake_arguments</code>, which produces a new partially-specialized type alias for use in declarations. Inline partial matching is for procedure signatures that need to accept a family of related types and infer the remaining parameters at the call site. The two can also be combined: you can build a partially-baked blueprint with <code>#bake_arguments</code> and then accept it with further <code>$</code> parameters in a procedure signature.
+</p>
+
 <h3>The $T/Base Syntax</h3>
 
 <p>
@@ -670,17 +727,14 @@ main :: () {
 </p>
 
 <h3>Choosing a Form</h3>
-
-<p>
-    The four forms shade into one another. As a rough guide:
-</p>
-
 <ul>
     <li>Use <strong>implicit polymorphism</strong> (<code>b: Box</code>) when you only need to read the parameters via dot syntax.</li>
     <li>Use <strong>explicit capture</strong> (<code>b: Box($T, $N)</code>) when you need to refer to the parameters by name in the rest of the signature.</li>
+    <li>Use <strong>partial matching</strong> (<code>b: Box($T, 2)</code> or <code>b: Box(int, $N)</code>) when you want to accept only a subset of instantiations, fixing some parameters and inferring others.</li>
     <li>Use <strong>$T/Base</strong> when you want to also accept structs that embed the polymorphic struct via <code>using</code>.</li>
     <li>Use <strong>$T/interface</strong> when you want to accept any struct shaped like a given reference, with no requirement that it contain that reference.</li>
 </ul>
+
 <h2>Reflection on Procedures</h2>
 
 <p>
