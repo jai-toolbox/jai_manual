@@ -125,3 +125,30 @@ outer: for i: 0..5 {
     </code>
 </pre>
 
+<div class="definition" id="definition-remove-in-for-loops">
+    <h2 class="line-text">Remove in For Loops</h2>
+    <p>
+        Jai provides a built-in <code>remove</code> statement that can be used inside <code>for</code> loops to safely remove the current element from the array being iterated. The compiler handles the bookkeeping for you, so you can continue iterating without skipping elements or running off the end.
+    </p>
+</div>
+
+<h3>Basic Usage</h3>
+
+<pre>
+    <code>
+for *thing : array_of_things {
+    if should_remove(thing) {
+        remove thing;
+    }
+}
+    </code>
+</pre>
+
+<p>
+    The <code>remove</code> statement performs an <strong>unordered remove</strong>: it swaps the current element with the last element of the array and decrements the count. This makes it an O(1) operation, but it does not preserve the original order of elements.
+</p>
+
+<p>
+    Because elements get swapped in from the end, the loop also adjusts its index correctly so that the swapped-in element is visited on the next iteration rather than skipped.
+</p>
+
