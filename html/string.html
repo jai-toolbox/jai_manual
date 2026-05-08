@@ -100,6 +100,45 @@ for :utf8_iter LYRICS {
     </code>
 </pre>
 
+<h2>#char</h2>
+
+<div class="definition" id="definition-char">
+    <h2 class="line-text">#char</h2>
+    <p>
+        <code>#char</code> is a compile-time directive that converts a single-character string literal
+        into its ASCII byte value. The result is a <a class="rlink" href="types.html#definition-u8"><code>u8</code></a>.
+    </p>
+</div>
+
+<pre>
+    <code>
+a := #char "W";  // a is 87
+b := #char " ";  // b is 32
+c := #char "A";  // c is 65
+
+print("type_of(#char \"W\") is: %\n", type_of(a));  // u8
+    </code>
+</pre>
+
+<p>
+    This is primarily useful when working with APIs that deal in raw byte values rather than strings for example, checking which key was pressed, or scanning through a string byte by byte:
+</p>
+
+<pre>
+    <code>
+s := "Hello, World!";
+for s {
+    if it == #char "," {
+        print("comma at index %\n", it_index);
+    }
+}
+    </code>
+</pre>
+
+<p>
+    The string argument to <code>#char</code> must be exactly one character long. Passing a multi-character string is a compile-time error.
+</p>
+
 <h2>Building Strings Dynamically</h2>
 
 <p>
