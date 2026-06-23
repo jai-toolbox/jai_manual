@@ -10,6 +10,20 @@
     Because a string is just a view, assigning one string to another does <strong>not</strong> copy the underlying bytes. It only copies the <code>data</code> pointer and <code>count</code>. This means string assignment is always cheap.
 </p>
 
+<p>
+    Since <code>string</code> is a view of bytes, it is sometimes used for generic data that is not text. This shows up in APIs that need a pointer plus a byte count, such as the sound player module:
+</p>
+
+<pre>
+    <code>
+load_audio_data :: (name_for_error_reporting: string, data: string) -> Sound_Data {
+    </code>
+</pre>
+
+<p>
+    The <code>data</code> parameter here is not meant to be interpreted as characters. It is raw bytes from an audio file. A <code>u8</code> is the natural element type for untyped binary data because it is exactly one byte, and an array view of <code>u8</code> carries both the address of the first byte and the number of bytes available. In other words, <code>string</code> can serve as a convenient byte slice when an API only needs to read a block of memory.
+</p>
+
 <pre>
     <code>
 x: string;

@@ -171,6 +171,10 @@ install_example :: () {
     Long lived data structures such as <a class="rlink" href="resizable_array.html#definition-resizable-array">resizable arrays</a> and hash tables store the allocator that was active when they were first used. They call that saved allocator consistently afterward, rather than using whatever <code>context.allocator</code> happens to be at the moment. This ensures that memory is always freed with the same allocator that allocated it.
 </p>
 
+<p>
+    When you import <code>Basic</code> with <code>MEMORY_DEBUGGER = true</code>, the module inserts allocation-checking hooks around <code>alloc</code>, <code>free</code>, and <code>realloc</code>. The debugger keeps its own table of allocation records and stack traces, so process memory can grow over time while it watches a long-running program. Use it to investigate memory problems, but disable it for shipped builds. See <a class="rlink" href="modules/basic/memory_debugger.html#definition-memory-debugger">Memory Debugger</a>.
+</p>
+
 <div class="definition" id="definition-push-allocator">
     <h2 class="line-text">push_allocator</h2>
     <p>

@@ -1,0 +1,54 @@
+<div class="definition" id="definition-memory-debugger">
+    <h2 class="line-text">Memory Debugger</h2>
+    <p>
+        The <code>Basic</code> module can wrap its allocation routines with the memory debugger:
+    </p>
+</div>
+
+<pre>
+    <code>
+#import "Basic"()(MEMORY_DEBUGGER = true);
+    </code>
+</pre>
+
+<p>
+    With this module parameter enabled, <code>modules/Basic/module.jai</code> loads <code>Memory_Debugger.jai</code>, and <code>alloc</code>, <code>free</code>, and <code>realloc</code> call <code>Memory_Debugger.check_alloc</code>, <code>check_free</code>, and <code>check_realloc</code>. Those hooks let the debugger report leaks, double frees, unknown frees, and allocator mismatches.
+</p>
+
+<p>
+    This bookkeeping uses memory of its own. In <code>Memory_Debugger.jai</code>, allocations are recorded in <code>address_table</code>. When the debugger sees a pointer address for the first time, <code>add_allocation_to_table</code> allocates an <code>Allocation</code> record from <code>address_table_pool</code> and stores the pointer, size, allocator, live/free state, allocation stack trace, and free stack trace. A later <code>free</code> marks that record as no longer live and saves the free trace; it does not remove the record from the table.
+</p>
+
+<p>
+    Because of this, a long-running program with lots of allocation churn can show steadily increasing process memory while the debugger is enabled. That increase can be the debugger accumulating history and stack-trace data about your program, not necessarily an application leak. If <code>VISUALIZE_MEMORY_DEBUGGER</code> is also enabled, the debugger keeps extra allocation/free summary tables for the live visualizer.
+</p>
+
+<h2>Live Visualization</h2>
+
+<p>
+    Jai also ships a live viewer in <code>examples/codex_view</code>. Build that example from its directory; its <code>build.jai</code> sets the output executable to <code>run/codex_view</code>. Run <code>codex_view</code>, open the <code>Allocs</code> view, then run your program with the memory debugger enabled:
+</p>
+
+<pre>
+    <code>
+#import "Basic"()(MEMORY_DEBUGGER = true, VISUALIZE_MEMORY_DEBUGGER = true);
+    </code>
+</pre>
+
+<p>
+    In a program that has a regular frame or tick, call this once per frame at a controlled point:
+</p>
+
+<pre>
+    <code>
+memory_visualizer_per_frame_update();
+    </code>
+</pre>
+
+<p>
+    That procedure is defined by <code>Visualize_Memory_Debugger.jai</code>. It initializes the visualization channel if needed and sends the current live allocations, allocations this frame, frees this frame, and stack-trace information to <code>codex_view</code>. When the visualizer is not enabled, <code>Basic</code> defines <code>memory_visualizer_per_frame_update</code> as an empty procedure, so it is convenient to leave the call site in your frame loop while controlling the feature with the module parameters.
+</p>
+
+<p>
+    Treat <code>MEMORY_DEBUGGER = true</code> as a development setting. Turn it on when tracking memory problems, then turn it off for shipped builds. Shipping with it enabled can make the executable slower and can cause the process to keep reserving memory for debugger metadata until the machine runs out of available memory.
+</p>
