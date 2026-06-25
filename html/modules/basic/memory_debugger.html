@@ -1,4 +1,4 @@
-<div class="definition" id="definition-memory-debugger">
+﻿<div class="definition" id="definition-memory-debugger">
     <h2 class="line-text">Memory Debugger</h2>
     <p>
         The <code>Basic</code> module can wrap its allocation routines with the memory debugger:
@@ -13,6 +13,10 @@
 
 <p>
     With this module parameter enabled, <code>modules/Basic/module.jai</code> loads <code>Memory_Debugger.jai</code>, and <code>alloc</code>, <code>free</code>, and <code>realloc</code> call <code>Memory_Debugger.check_alloc</code>, <code>check_free</code>, and <code>check_realloc</code>. Those hooks let the debugger report leaks, double frees, unknown frees, and allocator mismatches.
+</p>
+
+<p>
+    If you want to drive <code>MEMORY_DEBUGGER</code> from a build configuration constant, see <a class="rlink" href="../module_program_parameters.html#definition-module-program-parameters">Module and Program Parameters</a> for import-order details.
 </p>
 
 <p>
@@ -52,3 +56,4 @@ memory_visualizer_per_frame_update();
 <p>
     Treat <code>MEMORY_DEBUGGER = true</code> as a development setting. Turn it on when tracking memory problems, then turn it off for shipped builds. Shipping with it enabled can make the executable slower and can cause the process to keep reserving memory for debugger metadata until the machine runs out of available memory.
 </p>
+

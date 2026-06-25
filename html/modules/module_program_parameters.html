@@ -1,0 +1,58 @@
+﻿<div class="definition" id="definition-module-program-parameters">
+    <h2 class="line-text">Module and Program Parameters</h2>
+    <p>
+        Some Jai modules expose compile-time parameters through their <code>#module_parameters</code>. You pass those parameters at the import site by adding an argument list after the module import:
+    </p>
+</div>
+
+<pre>
+    <code>
+#import "Basic"()(MEMORY_DEBUGGER = true);
+    </code>
+</pre>
+
+<p>
+    These values are compile-time constants. The expression on the right side must be resolvable at the point where the import is processed.
+</p>
+
+<h2>Program Parameters</h2>
+
+<p>
+    Some module parameters effectively configure behavior for the whole program. <code>Basic.MEMORY_DEBUGGER</code> is an example: it controls whether <code>Basic</code> installs allocation-checking hooks around <code>alloc</code>, <code>free</code>, and <code>realloc</code>. Parameters like this should be supplied from the main program. If another imported module writes <code>#import "Basic";</code>, that import does not need to repeat the parameter list.
+</p>
+
+<p>
+    Because the parameter expression is evaluated in the importing scope, any constants it uses must already be visible. This often matters for build configuration constants.
+</p>
+
+<pre>
+    <code>
+#import "tbx/engine";
+#import "Basic"()(MEMORY_DEBUGGER = BUILD_TYPE == .DEVELOPMENT);
+    </code>
+</pre>
+
+<p>
+    In this example, <code>tbx/engine</code> exports <code>BUILD_TYPE</code>, so importing it first makes <code>BUILD_TYPE</code> visible to the main program before the parameterized <code>Basic</code> import is evaluated. This can look surprising if <code>tbx/engine</code> also imports <code>Basic</code> internally, but the main program is still the place that supplies the program-level parameter value.
+</p>
+
+<p>
+    Reversing the order is different:
+</p>
+
+<pre>
+    <code>
+#import "Basic"()(MEMORY_DEBUGGER = BUILD_TYPE == .DEVELOPMENT);
+#import "tbx/engine";
+    </code>
+</pre>
+
+<p>
+    Here, <code>BUILD_TYPE</code> has not been brought into scope yet when the compiler tries to evaluate the <code>Basic</code> import parameters. Depending on the surrounding imports, this may show up as an undeclared identifier or as a circular dependency report while the compiler tries to resolve the missing dependency through modules that themselves depend on <code>Basic</code>.
+</p>
+
+<h2>Rule of Thumb</h2>
+
+<p>
+    Put build settings used by module parameters somewhere the main program can see before the parameterized import. If a setting is exported by another module, import that module first, then import the parameterized module from the main program. Avoid making the parameterized module depend on the module that defines the setting; that shape can create circular dependencies.
+</p>

@@ -15,6 +15,67 @@
   </p>
 </div>
 
+<div class="definition" id="definition-compile-time-directive">
+    <h2 class="line-text">Compile-Time Directives</h2>
+    <p>
+        A compile-time directive is an instruction to the compiler. In Jai, many directives begin with <code>#</code>, such as <code>#if</code>, <code>#import</code>, <code>#load</code>, <code>#run</code>, and <code>#scope_file</code>. These are handled while the program is being compiled, before the finished executable runs.
+    </p>
+    <p>
+        Compile-time directives are used for conditional compilation, code generation, module loading, visibility control, introspection, and other work that should happen as part of building the program rather than as part of running it.
+    </p>
+</div>
+
+<div class="definition" id="definition-if-directive">
+    <h2 class="line-text">#if</h2>
+    <p>
+        <code>#if</code> is a compile-time conditional. Its condition must be known at <a class="rlink" href="compilation.html#definition-compile-time">compile time</a>. The compiler keeps the selected branch and discards the other branches before normal runtime execution.
+    </p>
+    <pre><code>DEBUG :: true;
+
+main :: () {
+    #if DEBUG {
+        print("debug checks are enabled\n");
+    } else {
+        // This branch is not included when DEBUG is true.
+    }
+}</code></pre>
+    <p>
+        Use <code>#if</code> when the shape of the program should change depending on a compile-time constant, such as a build option, a target platform, or whether an optional feature is enabled. This is different from a normal <code>if</code>, which chooses a branch while the program is running.
+    </p>
+</div>
+
+<div class="definition" id="definition-ifx-directive">
+    <h2 class="line-text">#ifx</h2>
+    <p>
+        <code>#ifx</code> is a compile-time conditional that tests whether an expression or declaration is valid in the current compile-time context. It is useful for generic code, where a type or value may or may not support a particular operation.
+    </p>
+    <pre><code>print_count_if_present :: (value: $T) {
+    #ifx value.count {
+        print("count is %\n", value.count);
+    } else {
+        print("value has no count field\n");
+    }
+}</code></pre>
+    <p>
+        The successful branch can use the expression that was tested. The fallback branch can provide an alternate implementation for types that do not have the required field, member, overload, or operation.
+    </p>
+</div>
+
+<div class="definition" id="definition-run-directive">
+    <h2 class="line-text">#run</h2>
+    <p>
+        <code>#run</code> executes a procedure while the program is compiling. The returned value can be used as a compile-time constant, and the procedure can perform build-time work such as generating data, validating assumptions, or constructing declarations used by the rest of the program.
+    </p>
+    <pre><code>make_lookup_table :: () -> [4] int {
+    return .[1, 4, 9, 16];
+}
+
+SQUARES :: #run make_lookup_table();</code></pre>
+    <p>
+        Code executed by <code>#run</code> runs in the compiler's build-time environment, not in the final program. Use it for work that should happen once during compilation rather than every time the executable starts.
+    </p>
+</div>
+
 
 <hr>
 
@@ -36,6 +97,18 @@
     <h2 class="line-text">File Scope</h2>
     <p>
         Given a Jai file, we say that its <a class="rlink" href="compilation.html#definition-scope">scope</a> is the collection of identifiers created in the file. A file scope sits underneath the <a class="rlink" href="compilation.html#definition-top-level-scope">top level scope</a>, meaning code in a file can also see identifiers from the top level scope.
+    </p>
+</div>
+
+<div class="definition" id="definition-redeclaration">
+    <h2 class="line-text">Redeclaration</h2>
+    <p>
+        A redeclaration error occurs when the same identifier is declared more than once in the same <a class="rlink" href="compilation.html#definition-scope">scope</a>. For example, if a scope already contains <code>number :: 1;</code>, another declaration of <code>number</code> in that same scope is ambiguous, so the compiler reports <em>Redeclaration of 'number'</em> and points back to the first declaration.
+    </p>
+    <pre><code>number :: 1;
+number :: 2;  // Error: Redeclaration of 'number'.</code></pre>
+    <p>
+        This can happen directly in one file, or indirectly when <a class="rlink" href="compilation.html#definition-load"><code>#load</code></a> inserts the same declarations into a scope more than once.
     </p>
 </div>
 
@@ -67,23 +140,43 @@
     </p>
 </div>
 
-<div class="definition" id="definition-import">
-    <h2 class="line-text">#import</h2>
+<div class="definition" id="definition-module-search-directories">
+    <h2 class="line-text">Module Search Directories</h2>
     <p>
-        <code>#import "Module_Name";</code> is a compile time directive that searches the <a class="rlink" href="compilation.html#definition-import-path">import path</a> for the file <code>module_name.jai</code> or <code>module_name/module.jai</code>. Once found, the file is treated as a <a class="rlink" href="compilation.html#definition-module">module</a>. The module's <a class="rlink" href="compilation.html#definition-scope-export"><code>#scope_export</code></a> identifiers are made <em>visible</em> to the <a class="rlink" href="compilation.html#definition-file-scope">file scope</a> that the <code>#import</code> exists in, but they are not added to it, they remain in the module's own scope. Identifiers behind <a class="rlink" href="compilation.html#definition-scope-module"><code>#scope_module</code></a> or <a class="rlink" href="compilation.html#definition-scope-file"><code>#scope_file</code></a> are not visible to the importer.
+        Module search directories are the directories the compiler searches when resolving a <a class="rlink" href="compilation.html#definition-import"><code>#import</code></a>. If the compiler cannot find the requested module, its diagnostic reports that it was unable to find the module in any of the module search directories, then lists each searched path.
     </p>
     <p>
-        The syntax <code>Module_Name :: #import "Module_Name";</code> binds the module's scope to the identifier <code>Module_Name</code>. The module's exported identifiers are then accessed through it, e.g. <code>Module_Name.some_identifier</code>.
+        For a module named <code>a</code>, the compiler looks for module files such as <code>a.jai</code> and module folders such as <code>a/module.jai</code> inside those directories. The searched directories can include a <code>modules</code> directory near the target program and module directories provided by the Jai installation.
     </p>
 </div>
 
 <div class="definition" id="definition-import">
     <h2 class="line-text">#import</h2>
     <p>
-        <code>#import "Module_Name";</code> is a compile time directive that searches the <a class="rlink" href="compilation.html#definition-import-path">import path</a> for the file <code>module_name.jai</code> or <code>module_name/module.jai</code>. Once found, the file is treated as a <a class="rlink" href="compilation.html#definition-module">module</a>, and only its <a class="rlink" href="compilation.html#definition-scope-export"><code>#scope_export</code></a> identifiers are pulled into the <a class="rlink" href="compilation.html#definition-file-scope">file scope</a> that the <code>#import</code> exists in. Identifiers behind <a class="rlink" href="compilation.html#definition-scope-module"><code>#scope_module</code></a> or <a class="rlink" href="compilation.html#definition-scope-file"><code>#scope_file</code></a> are not visible to the importer.
+        <code>#import "Module_Name";</code> is a compile time directive that searches the <a class="rlink" href="compilation.html#definition-module-search-directories">module search directories</a> for the file <code>module_name.jai</code> or <code>module_name/module.jai</code>. Once found, the file is treated as a <a class="rlink" href="compilation.html#definition-module">module</a>. The module's <a class="rlink" href="compilation.html#definition-scope-export"><code>#scope_export</code></a> identifiers are made <em>visible</em> to the <a class="rlink" href="compilation.html#definition-file-scope">file scope</a> that the <code>#import</code> exists in, but they are not added to it, they remain in the module's own scope. Identifiers behind <a class="rlink" href="compilation.html#definition-scope-module"><code>#scope_module</code></a> or <a class="rlink" href="compilation.html#definition-scope-file"><code>#scope_file</code></a> are not visible to the importer.
     </p>
     <p>
-        The syntax <code>Module_Name :: #import "Module_Name";</code>, makes any adds any identifier <code>id</code> to the file scope of the <code>#import</code>.
+        For example, this project layout can import the module <code>a</code>, because <code>a.jai</code> exists inside the local <code>modules</code> directory:
+    </p>
+    <pre><code>.
+|-- main.jai
+`-- modules
+    `-- a.jai</code></pre>
+    <p>
+        The corresponding <code>main.jai</code> can import <code>a</code> like this:
+    </p>
+    <pre><code>#import "a";
+
+main :: () {
+}</code></pre>
+    <p>
+        A common pitfall is writing <code>#import "a.jai";</code> when trying to import the file <code>a.jai</code>. That does not import the file directly. Instead, it asks the compiler to find a module named <code>a.jai</code>, which means the compiler will search for module files and folders based on that full module name.
+    </p>
+    <p>
+        The extension is omitted because a module may be represented by a single file, such as <code>a.jai</code>, or by a directory containing a <code>module.jai</code> file, such as <code>a/module.jai</code>. In both cases, the module name is <code>a</code>, so the import writes the module name rather than the underlying filename.
+    </p>
+    <p>
+        The syntax <code>Module_Name :: #import "Module_Name";</code> binds the module's scope to the identifier <code>Module_Name</code>. The module's exported identifiers are then accessed through it, e.g. <code>Module_Name.some_identifier</code>.
     </p>
 </div>
 
@@ -98,5 +191,92 @@
     <h2 class="line-text">#load</h2>
     <p>
         <code>#load "file.jai";</code> is a compile time directive that inserts the contents of the specified file into the current <a class="rlink" href="compilation.html#definition-file-scope">file scope</a>. Only identifiers under <a class="rlink" href="compilation.html#definition-scope-export"><code>#scope_export</code></a> in the loaded file are brought into the loading file's scope. Identifiers behind <a class="rlink" href="compilation.html#definition-scope-file"><code>#scope_file</code></a> remain private to the loaded file. Unlike <a class="rlink" href="compilation.html#definition-import"><code>#import</code></a>, the loaded file does <em>not</em> get its own isolated scope, it shares the same scope as the file that loaded it and can see (and contribute to) identifiers in the <a class="rlink" href="compilation.html#definition-top-level-scope">top level scope</a>.
+    </p>
+    <p>
+        Using the same layout as above, <code>main.jai</code> can load the file <code>modules/a.jai</code> directly:
+    </p>
+    <pre><code>.
+|-- main.jai
+`-- modules
+    `-- a.jai</code></pre>
+    <pre><code>#load "modules/a.jai";
+
+main :: () {
+}</code></pre>
+    <p>
+        A common mistake is writing <code>#load "a.jai";</code> in this layout. That does not search the module search directories, and it does not search inside <code>modules</code> by module name. <code>#load</code> expects a valid file path, relative to the file that contains the <code>#load</code> directive. Since <code>a.jai</code> is inside <code>modules</code>, the path must include that directory.
+    </p>
+</div>
+
+<hr>
+
+<div class="definition" id="definition-compilation-process">
+    <h2 class="line-text">Compilation Process</h2>
+    <p>
+        When a Jai program is compiled, the compiler first has to determine what source code belongs to the program. In broad terms, <a class="rlink" href="compilation.html#definition-load"><code>#load</code></a> directives are evaluated by inserting the loaded file's exported contents into the loading file's scope. This is similar to pasting the contents of one file into another, while still respecting directives such as <a class="rlink" href="compilation.html#definition-scope-file"><code>#scope_file</code></a>.
+    </p>
+    <p>
+        <a class="rlink" href="compilation.html#definition-import"><code>#import</code></a> works differently. Import directives are handed to the <a class="rlink" href="compilation.html#definition-import-resolver">import resolver</a>, which locates the requested modules, builds each module in its own scope, and makes only the exported identifiers visible to the importing file.
+    </p>
+    <p>
+        The import resolver exists so that importing code does not create the kinds of problems that plain textual inclusion would create. For example, if many files import the same module, the module should not be compiled over and over as separate copies. If two modules contain private helpers with the same name, those helpers should not collide in the importing file. If a module has internal implementation details, those details should not leak into every file that imports it. The resolver keeps module scopes distinct, deduplicates repeated imports, applies visibility rules, and gives the compiler a consistent view of the program before type checking and code generation proceed.
+    </p>
+    <p>
+        Because <code>#load</code> behaves like inclusion, loading the same file twice can create duplicate declarations. Suppose <code>modules/a.jai</code> contains this declaration:
+    </p>
+    <pre><code>number :: 1;</code></pre>
+    <p>
+        Loading that file twice inserts <code>number</code> into the same file scope twice:
+    </p>
+    <pre><code>#load "modules/a.jai";
+#load "modules/a.jai";
+
+main :: () {
+}</code></pre>
+    <p>
+        The result is a <a class="rlink" href="compilation.html#definition-redeclaration">redeclaration</a> error, because the same identifier has been introduced into the same scope more than once.
+    </p>
+    <p>
+        Importing the same module twice is different. These two imports do not create two separate copies of module <code>a</code>:
+    </p>
+    <pre><code>#import "a";
+#import "a";
+
+main :: () {
+}</code></pre>
+    <p>
+        This compiles because the import resolver deduplicates repeated imports of the same module. The module is resolved and compiled once, and later imports refer to that same module scope rather than pasting another copy of its declarations into the importer.
+    </p>
+    <p>
+        This matters most in ordinary dependency graphs. For example, two modules may both depend on a shared math module:
+    </p>
+    <pre><code>.
+|-- main.jai
+`-- modules
+    |-- a.jai
+    |-- b.jai
+    `-- c.jai</code></pre>
+    <p>
+        <code>modules/c.jai</code> might provide shared constants or procedures:
+    </p>
+    <pre><code>TAU :: 6.283185307179586;</code></pre>
+    <p>
+        Both <code>a</code> and <code>b</code> can import <code>c</code>:
+    </p>
+    <pre><code>// modules/a.jai
+#import "c";
+
+// modules/b.jai
+#import "c";</code></pre>
+    <p>
+        Then <code>main.jai</code> can import both <code>a</code> and <code>b</code>:
+    </p>
+    <pre><code>#import "a";
+#import "b";
+
+main :: () {
+}</code></pre>
+    <p>
+        Without deduplication, module <code>c</code> would be pulled in once through <code>a</code> and again through <code>b</code>, which would create duplicate module work and possible declaration conflicts. The import resolver avoids that by recognizing that both imports refer to the same module <code>c</code>, resolving it once, and sharing that resolved module wherever it is imported.
     </p>
 </div>
